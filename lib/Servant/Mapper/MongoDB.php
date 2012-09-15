@@ -63,12 +63,21 @@ class MongoDB extends \Servant\Base
     return TRUE;
   }
 
-  public function fields()
+  public function fields($updated = FALSE)
   {
-    $data = $this->props;
-    $data['_id'] = (string) $data['_id'];
+    $out = $this->props;
 
-    return $data;
+    if ($updated) {
+      foreach ($out as $key => $val) {
+        if ( ! in_array($key, $this->changed)) {
+          unset($out[$key]);
+        }
+      }
+    }
+
+    $out['_id'] = (string) $out['_id'];
+
+    return $out;
   }
 
   public static function count(array $params = array())
