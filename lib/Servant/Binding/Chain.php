@@ -40,7 +40,7 @@ class Chain
     $model = $this->model;
 
     if (in_array($method, static::$retrieve)) {
-      $arguments []= $this->params();
+      array_unshift($arguments, $this->params());
       return call_user_func_array("$model::$method", $arguments);
     } elseif (isset($model::$$method)) {
       return $this->$method->all($this->params());
