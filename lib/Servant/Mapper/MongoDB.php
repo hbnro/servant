@@ -2,7 +2,7 @@
 
 namespace Servant\Mapper;
 
-class Mongo extends \Servant\Base
+class MongoDB extends \Servant\Base
 {
 
   public static function __callStatic($method, $arguments)
