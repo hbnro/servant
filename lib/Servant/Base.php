@@ -199,7 +199,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public function to_a()
   {
-    return $this->props;
+    return $this->fields();
   }
 
   public function to_s()
