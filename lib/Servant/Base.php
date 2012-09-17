@@ -184,11 +184,9 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public function delete()
   {
-    static::delete_all(array(
+    return static::delete_all(array(
       static::pk() => $this->props[static::pk()],
     ));
-
-    return $this;
   }
 
 
