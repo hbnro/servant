@@ -1,0 +1,13 @@
+{
+  "name": "habanero/servant",
+  "description": "Simple data-mapper interface for Grocery",
+  "authors": [{
+    "name":"Alvaro Cabrera"
+  }],
+  "require": {
+    "php": ">=5.3"
+  },
+  "autoload": {
+    "psr-0": {"Servant": "lib/"}
+  }
+}
