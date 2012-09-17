@@ -83,7 +83,7 @@ class MongoDB extends \Servant\Base
 
   public static function count(array $params = array())
   {
-    return (int) static::conn()->count( ! empty($params['where']) ? $params['where'] : $params);
+    return (int) static::conn()->count(static::parse( ! empty($params['where']) ? $params['where'] : $params));
   }
 
   public static function columns()
@@ -106,7 +106,7 @@ class MongoDB extends \Servant\Base
       $params['_id'] = static::ids($params['_id']);
     }
 
-    return static::conn()->remove($params);
+    return static::conn()->remove(static::parse($params));
   }
 
   public static function update_all(array $data, array $params = array())
@@ -121,7 +121,7 @@ class MongoDB extends \Servant\Base
       $params['_id'] = static::ids($params['_id']);
     }
 
-    $out = static::conn()->update($params, $data, array('multiple' => TRUE));
+    $out = static::conn()->update(static::parse($params), $data, array('multiple' => TRUE));
 
     static::callback($tmp, 'after_save');
 
@@ -149,8 +149,8 @@ class MongoDB extends \Servant\Base
     $method = ! empty($options['single']) ? 'findOne' : 'find';
 
     if (array_key_exists('_id', $where)) {
+      (sizeof($where['_id']) === 1) && $method = 'findOne';
       $where['_id'] = static::ids($where['_id']);
-      $method = 'findOne';
     }
 
     $row = static::conn()->$method($where, $fields);
@@ -171,45 +171,44 @@ class MongoDB extends \Servant\Base
 
   private static function parse($test)
   {
-    foreach ($test as $key => $val) {
-      unset($test[$key]);
+    $out = array();
 
+    foreach ($test as $key => $val) {
       if (\Grocery\Helpers::is_keyword($key)) {
-        $test['$' . strtolower($key)] = $val;
+        $out['$' . strtolower($key)] = $val;
       } elseif (strpos($key, '/_or_/')) {
-        $test['$or'] = array();
+        $out['$or'] = array();
 
         foreach (explode('_or_') as $one) {
-          $test['$or'] []= array($one => $val);
+          $out['$or'] []= array($one => $val);
         }
       } elseif (preg_match('/^(.+?)(?:\s+(!=?|[<>]=?|<>|NOT|R?LIKE)\s*)$/', $key, $match)) {
         switch ($match[2]) {
           case 'NOT'; case '<>'; case '!'; case '!=';
-            $test[$match[1]] = array(is_array($val) ? '$nin': '$ne' => $val);
+            $out[$match[1]] = array(is_array($val) ? '$nin': '$ne' => $val);
           break;
           case '<'; case '<=';
-            $test[$match[1]] = array('$lt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val);
+            $out[$match[1]] = array('$lt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val);
           break;
           case '>'; case '>=';
-            $test[$match[1]] = array('$gt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val);
+            $out[$match[1]] = array('$gt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val);
           break;
           case 'RLIKE';
-            $test[$match[1]] = array('$regex' => str_replace('\\', '\\\\', $val), '$options' => 'us');
+            $out[$match[1]] = array('$regex' => str_replace('\\', '\\\\', $val), '$options' => 'us');
           break;
           case 'LIKE';
             $val = preg_quote($val, '/');
             $val = strtr("^$val$", array('^%' => '', '%$' => '', '%' => '.*'));
 
-            $test[$match[1]] = array('$regex' => $val, '$options' => 'uis');
-          break;
-          default;
-            $test[$match[1]] = is_array($val) ? array('$in' => $val) : $val;
+            $out[$match[1]] = array('$regex' => $val, '$options' => 'uis');
           break;
         }
+      } else {
+        $out[$key] = is_array($val) ? array('$in' => $val) : $val;
       }
     }
 
-    return $test;
+    return $out;
   }
 
   private static function conn()
