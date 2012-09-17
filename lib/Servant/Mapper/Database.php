@@ -64,25 +64,8 @@ class Database extends \Servant\Base
   }
 
   public static function pk()
-  {// TODO: this should be provided by grocery?
-    $pk = FALSE;
-
-    foreach (static::columns() as $key => $one) {
-      if ( ! \Grocery\Helpers::is_assoc($one)) {
-        @list($one['type']) = $one;
-      }
-
-      if ($one['type'] === 'primary_key') {
-        $pk = $key;
-        break;
-      }
-    }
-
-    if ( ! $pk) {
-      die("missing PK!!");
-    }
-
-    return $pk;
+  {
+    return defined('static::PK') ? static::PK : 'id';
   }
 
   public static function delete_all(array $params = array())
