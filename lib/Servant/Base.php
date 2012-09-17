@@ -218,33 +218,36 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public static function find()
   {
-    $args    = func_get_args();
+    $wich = 'all';
 
-    $wich    = array_shift($args);
-    $params  = array_pop($args);
+    $ids =
+    $what =
+    $where =
+    $params = array();
 
-    $where   =
-    $options = array();
-
-    if (\Grocery\Helpers::is_assoc($params)) {
-      $options = (array) $params;
-    } else {
-      $args []= $params;
+    foreach (func_get_args() as $one) {
+      if (in_array($one, array('all', 'last', 'first'))) {
+        $wich = $one;
+      } elseif (\Grocery\Helpers::is_assoc($one)) {
+        $params += $one;
+      } else {
+        $ids []= $one;
+      }
     }
 
-    if ( ! empty($options['where'])) {
-      $where = (array) $options['where'];
-      unset($options['where']);
+    if ( ! empty($params['where'])) {
+      $where = (array) $params['where'];
+      unset($params['where']);
     }
 
-    $what = array();
-
-    if ( ! empty($options['select'])) {
-      $what = (array) $options['select'];
-      unset($options['select']);
+    if ( ! empty($params['select'])) {
+      $what = (array) $params['select'];
+      unset($params['select']);
     }
 
-    return static::finder($wich, $what, $where, $options);
+    $ids && $where[static::pk()] = sizeof($ids) > 1 ? $ids : end($ids);
+
+    return static::finder($wich, $what, $where, $params);
   }
 
   public static function each($params = array(), \Closure $lambda = NULL)
