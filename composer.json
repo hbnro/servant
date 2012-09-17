@@ -5,7 +5,8 @@
     "name":"Alvaro Cabrera"
   }],
   "require": {
-    "php": ">=5.3"
+    "php": ">=5.3",
+    "habanero/grocery": "dev-master"
   },
   "autoload": {
     "psr-0": {"Servant": "lib/"}
