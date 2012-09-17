@@ -80,6 +80,7 @@ class MongoDB extends \Servant\Base
     return $out;
   }
 
+
   public static function count(array $params = array())
   {
     return (int) static::conn()->count( ! empty($params['where']) ? $params['where'] : $params);
@@ -168,7 +169,6 @@ class MongoDB extends \Servant\Base
     return is_object($row) ? iterator_to_array($row) : $row;
   }
 
-  // TODO: javascript filters
   private static function parse($test)
   {
     foreach ($test as $key => $val) {
@@ -182,8 +182,8 @@ class MongoDB extends \Servant\Base
         foreach (explode('_or_') as $one) {
           $test['$or'] []= array($one => $val);
         }
-      } elseif (preg_match('/^(.+?)(\s+(!=?|[<>]=?|<>|NOT|R?LIKE)\s*|)$/', $key, $match)) {
-        switch ($match[2]) {// TODO: do testing!
+      } elseif (preg_match('/^(.+?)(?:\s+(!=?|[<>]=?|<>|NOT|R?LIKE)\s*)$/', $key, $match)) {
+        switch ($match[2]) {
           case 'NOT'; case '<>'; case '!'; case '!=';
             $test[$match[1]] = array(is_array($val) ? '$nin': '$ne' => $val);
           break;
@@ -194,10 +194,13 @@ class MongoDB extends \Servant\Base
             $test[$match[1]] = array('$gt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val);
           break;
           case 'RLIKE';
-            $test[$match[1]] = '/' . preg_quote($match[2], '/') . '/gis';
+            $test[$match[1]] = array('$regex' => str_replace('\\', '\\\\', $val), '$options' => 'us');
           break;
           case 'LIKE';
-            $test[$match[1]] = '/' . str_replace('%', '.*?', preg_quote($match[2], '/')) . '/gis';
+            $val = preg_quote($val, '/');
+            $val = strtr("^$val$", array('^%' => '', '%$' => '', '%' => '.*'));
+
+            $test[$match[1]] = array('$regex' => $val, '$options' => 'uis');
           break;
           default;
             $test[$match[1]] = is_array($val) ? array('$in' => $val) : $val;
