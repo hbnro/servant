@@ -300,31 +300,48 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       return \Servant\Binding\Chain::from(get_called_class(), $arguments)->$method;
     }
 
+    switch (TRUE) {
+      case in_array($method, array('first', 'last', 'all'));
+        array_unshift($arguments, $method);
+        return call_user_func_array(get_called_class() . '::find', $arguments);
+      case preg_match('/^(build|create)_by_(.+)$/', $method, $match);
+        return static::$match[1](\Grocery\Helpers::merge($match[2], $arguments));
+      case preg_match('/^(?:find_)?(all|first|last)_by_(.+)$/', $method, $match);
+        return static::find($match[1], array(
+          'where' => \Grocery\Helpers::merge($match[2], $arguments),
+        ));
+      case preg_match('/^each_by_(.+)$/', $method, $match);
+        $test = array_pop($arguments);
 
-    if (in_array($method, array('first', 'last', 'all'))) {
-      array_unshift($arguments, $method);
-      return call_user_func_array(get_called_class() . '::find', $arguments);
-    } elseif (preg_match('/^(build|create)_by_(.+)$/', $method, $match)) {
-      return static::$match[1](\Grocery\Helpers::merge($match[2], $arguments));
-    } elseif (preg_match('/^(?:find_)?(all|first|last)_by_(.+)$/', $method, $match)) {
-      return static::find($match[1], array(
-        'where' => \Grocery\Helpers::merge($match[2], $arguments),
-      ));
-    } elseif (preg_match('/^each_by_(.+)$/', $method, $match)) {
-      $test = array_pop($arguments);
+        if ( ! ($test instanceof \Closure)) {
+          $arguments []= $test;
+          $test = NULL;
+        }
 
-      if ( ! ($test instanceof \Closure)) {
-        $arguments []= $test;
-        $test = NULL;
-      }
+        return static::each(array(
+          'block' => $test,
+          'where' => \Grocery\Helpers::merge($match[1], $arguments),
+        ));
+      case $method === 'pick';
+        $limit = 1;
+        $params = array();
 
-      return static::each(array(
-        'block' => $test,
-        'where' => \Grocery\Helpers::merge($match[1], $arguments),
-      ));
+
+        foreach ($arguments as $one) {
+          if (is_numeric($one)) {
+            $limit = (int) $one;
+          } elseif (\Grocery\Helpers::is_assoc($one)) {
+            $params += $one;
+          }
+        }
+
+        $method = $limit > 1 ?  'fetch_all' : 'fetch';
+        $params['limit'] = $limit;
+
+        return static::find($params);
     }
 
-    die("method $method missing!!!");
+    throw new \Exception("Method '$method' missing.");
   }
 
   protected static function callback($row, $method)
