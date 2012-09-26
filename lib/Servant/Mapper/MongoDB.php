@@ -161,7 +161,7 @@ class MongoDB extends \Servant\Base
 
     if ( ! empty($options['order'])) {
       foreach ($options['order'] as $key => $val) {
-        $options['order'][$key] = $val === 'DESC' ? -1 : 1;
+        $options['order'][$key] = $val == 'DESC' ? -1 : 1;
       }
       $row->sort($options['order']);
     }
