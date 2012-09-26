@@ -108,22 +108,25 @@ class Database extends \Servant\Base
     }
 
 
-    if ( ! isset(static::$registry[static::CONNECTION])) {
-      $lock = \Servant\Config::lock(static::CONNECTION);
+    if (isset(static::$registry[static::CONNECTION])) {
+      $db = static::$registry[static::CONNECTION];
+    } else {
       $dsn = \Servant\Config::get(static::CONNECTION);
       $db = \Grocery\Base::connect($dsn);
 
-      if ( ! $lock) {
-        if ( ! isset($db[static::table()])) {
-          $db[static::table()] = static::columns();
-        } else {
-          \Grocery\Helpers::hydrate($db[static::table()], static::columns(), static::indexes());
-        }
-      }
-
       static::$registry[static::CONNECTION] = $db;
     }
-    return static::$registry[static::CONNECTION]->{static::table()};
+
+
+    if ( ! \Servant\Config::lock(static::CONNECTION)) {
+      if ( ! isset($db[static::table()])) {
+        $db[static::table()] = static::columns();
+      } else {
+        \Grocery\Helpers::hydrate($db[static::table()], static::columns(), static::indexes());
+      }
+    }
+
+    return $db->{static::table()};
   }
 
 
