@@ -218,16 +218,18 @@ class MongoDB extends \Servant\Base
     }
 
 
-    if ( ! isset(static::$registry[static::CONNECTION])) {
+    if (isset(static::$registry[static::CONNECTION])) {
+      $db = static::$registry[static::CONNECTION];
+    } else {
       $dsn_string = \Servant\Config::get(static::CONNECTION);
-      $database   = substr($dsn_string, strrpos($dsn_string, '/') + 1);
+      $database = substr($dsn_string, strrpos($dsn_string, '/') + 1);
+      $mongo = $dsn_string ? new \Mongo($dsn_string) : new \Mongo;
+      $db = $mongo->{$database ?: 'default'};
 
-      $mongo    = $dsn_string ? new \Mongo($dsn_string) : new \Mongo;
-      $database = $database ?: 'default';
-
-      static::$registry[static::CONNECTION] = $mongo->$database;
+      static::$registry[static::CONNECTION] = $db;
     }
-    return static::$registry[static::CONNECTION]->{static::table()};
+
+    return $db->{static::table()};
   }
 
 
