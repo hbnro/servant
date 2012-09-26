@@ -143,7 +143,7 @@ class MongoDB extends \Servant\Base
     }
   }
 
-  private static function select($fields, $where, $options)
+  private static function select($fields, $where, $options, $cursor = FALSE)
   {
     $where  = static::parse($where);
     $method = ! empty($options['single']) ? 'findOne' : 'find';
@@ -166,7 +166,7 @@ class MongoDB extends \Servant\Base
       $row->sort($options['order']);
     }
 
-    return is_object($row) ? iterator_to_array($row) : $row;
+    return is_object($row) && ! $cursor ? iterator_to_array($row) : $row;
   }
 
   private static function parse($test)
@@ -235,9 +235,7 @@ class MongoDB extends \Servant\Base
 
   protected static function block($get, $where, $params, $lambda)
   {
-    $res = static::select($get, $where, $params);
-
-    while ($row = array_shift($res)) {
+    foreach (static::select($get, $where, $params, TRUE) as $row) {
       $lambda(new static($row, 'after_find', FALSE, $params));
     }
   }
@@ -256,9 +254,8 @@ class MongoDB extends \Servant\Base
       break;
       case 'all';
         $out = array();
-        $res = static::select($what, $where, $options);
 
-        while ($row = array_shift($res)) {
+        foreach (static::select($what, $where, $options, TRUE) as $row) {
           $out []= new static($row, 'after_find', FALSE, $options);
         }
         return $out;
