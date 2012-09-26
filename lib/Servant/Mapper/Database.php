@@ -9,14 +9,14 @@ class Database extends \Servant\Base
   {
     if (strpos($method, 'find_by_') === 0) {
       $test = \Grocery\Helpers::merge(substr($method, 8), $arguments);
-      $row  = static::conn()->select(static::table(), static::defaults(), $test)->fetch();
+      $row  = static::conn()->select(static::defaults(), $test)->fetch();
 
       return $row ? new static($row->to_a(), 'after_find') : FALSE;
     } elseif (strpos($method, 'count_by_') === 0) {
       return static::count(\Grocery\Helpers::merge(substr($method, 9), $arguments));
     } elseif (strpos($method, 'find_or_create_by_') === 0) {
       $test = \Grocery\Helpers::merge(substr($method, 18), $arguments);
-      $res  = static::conn()->select(static::table(), static::defaults(), $test)->fetch();
+      $res  = static::conn()->select(static::defaults(), $test)->fetch();
 
       return $res ? new static($res->to_a(), 'after_find') : static::create($test);
     }
@@ -39,10 +39,10 @@ class Database extends \Servant\Base
     unset($fields[static::pk()]);
 
     if ($this->is_new()) {
-      $this->props[static::pk()] = static::conn()->insert(static::table(), $fields, static::pk());
+      $this->props[static::pk()] = static::conn()->insert($fields, static::pk());
       $this->new_record = FALSE;
     } else {
-      static::conn()->update(static::table(), $fields, array(
+      static::conn()->update($fields, array(
         static::pk() => $this->props[static::pk()],
       ));
     }
@@ -55,7 +55,7 @@ class Database extends \Servant\Base
 
   public static function count(array $params = array())
   {
-    return (int) static::conn()->select(static::table(), 'COUNT(*)', ! empty($params['where']) ? $params['where'] : $params)->result();
+    return (int) static::conn()->select('COUNT(*)', ! empty($params['where']) ? $params['where'] : $params)->result();
   }
 
   public static function columns()
@@ -70,7 +70,7 @@ class Database extends \Servant\Base
 
   public static function delete_all(array $params = array())
   {
-    return static::conn()->delete(static::table(), $params);
+    return static::conn()->delete($params);
   }
 
   public static function update_all(array $data, array $params = array())
@@ -79,7 +79,7 @@ class Database extends \Servant\Base
 
     static::callback($tmp, 'before_save');
 
-    return static::conn()->update(static::table(), (array) $tmp, $params);
+    return static::conn()->update((array) $tmp, $params);
 
     static::callback($tmp, 'after_save');
   }
@@ -123,13 +123,13 @@ class Database extends \Servant\Base
 
       static::$registry[static::CONNECTION] = $db;
     }
-    return static::$registry[static::CONNECTION];
+    return static::$registry[static::CONNECTION]->{static::table()};
   }
 
 
   protected static function block($get, $where, $params, $lambda)
   {
-    $res = static::conn()->select(static::table(), static::defaults($get), $where, $params);
+    $res = static::conn()->select(static::defaults($get), $where, $params);
     while ($row = $res->fetch()) {
       $lambda(new static($row->to_a(), 'after_find', FALSE, $params));
     }
@@ -148,13 +148,13 @@ class Database extends \Servant\Base
           );
         }
 
-        $row = static::conn()->select(static::table(), static::defaults($what), $where, $options)->fetch();
+        $row = static::conn()->select(static::defaults($what), $where, $options)->fetch();
 
         return $row ? new static($row->to_a(), 'after_find', FALSE, $options) : FALSE;
       break;
       case 'all';
         $out = array();
-        $res = static::conn()->select(static::table(), static::defaults($what), $where, $options);
+        $res = static::conn()->select(static::defaults($what), $where, $options);
 
         while ($row = $res->fetch()) {
           $out []= new static($row->to_a(), 'after_find', FALSE, $options);
@@ -162,7 +162,7 @@ class Database extends \Servant\Base
         return $out;
       break;
       default;
-        $row = static::conn()->select(static::table(), static::defaults($what), array(
+        $row = static::conn()->select(static::defaults($what), array(
           static::pk() => $wich,
         ), $options)->fetch();
 
