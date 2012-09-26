@@ -70,7 +70,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   {
     $this->new_record = (bool) $new;
 
-    foreach (array_keys(static::columns()) as $key) {
+    foreach (array_keys(static::$columns) as $key) {
       $this->props[$key] = isset($params[$key]) ? $params[$key] : NULL;
     }
 
@@ -126,7 +126,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public function attr($key, $val = NULL)
   {
-    if ( ! array_key_exists($key, $this->columns())) {
+    if ( ! array_key_exists($key, static::$columns)) {
       die("undefined prop $key!!!");
     }
 
@@ -353,7 +353,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   {
     $current = @date('Y-m-d H:i:s');
 
-    $props   = static::columns();
+    $props   = static::$columns;
     $fields  = $row->props;
 
     if ( ! $row->is_new()) {
