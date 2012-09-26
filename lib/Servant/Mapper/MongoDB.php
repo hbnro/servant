@@ -44,7 +44,7 @@ class MongoDB extends \Servant\Base
     unset($fields['_id']);
 
     if ($this->is_new()) {
-      if (static::conn()->insert($fields)) {
+      if (static::conn()->insert($fields, array('safe' => TRUE))) {
         $this->new_record = FALSE;
         $this->props = $fields;
       }
