@@ -1,6 +1,6 @@
 {
   "name": "habanero/servant",
-  "description": "Simple data-mapper interface for Grocery",
+  "description": "Simple data-mapper interface for Grocery and MongoDB",
   "authors": [{
     "name":"Alvaro Cabrera"
   }],
