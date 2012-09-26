@@ -212,14 +212,22 @@ class MongoDB extends \Servant\Base
   }
 
   private static function conn()
-  { // TODO: memoize connection
-    $dsn_string = defined('static::CONNECTION') ? \Servant\Config::get(static::CONNECTION) : '';
-    $database   = substr($dsn_string, strrpos($dsn_string, '/') + 1);
+  {
+    if ( ! defined('static::CONNECTION')) {
+      throw new \Exception("The MongoDB connection was not defined.");
+    }
 
-    $mongo    = $dsn_string ? new \Mongo($dsn_string) : new \Mongo;
-    $database = $database ?: 'default';
 
-    return $mongo->$database->{static::table()};
+    if ( ! isset(static::$registry[static::CONNECTION])) {
+      $dsn_string = \Servant\Config::get(static::CONNECTION);
+      $database   = substr($dsn_string, strrpos($dsn_string, '/') + 1);
+
+      $mongo    = $dsn_string ? new \Mongo($dsn_string) : new \Mongo;
+      $database = $database ?: 'default';
+
+      static::$registry[static::CONNECTION] = $mongo->$database;
+    }
+    return static::$registry[static::CONNECTION]->{static::table()};
   }
 
 

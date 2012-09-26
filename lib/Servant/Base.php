@@ -11,6 +11,9 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   protected $new_record = NULL;
 
   public static $columns = array();
+  public static $indexes = array();
+
+  protected static $registry = array();
 
 
 
@@ -292,6 +295,11 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   public static function table()
   {
     return defined('static::TABLE') ? static::TABLE : \Servant\Helpers::underscore(get_called_class());
+  }
+
+  public static function indexes()
+  {
+    return static::$indexes;
   }
 
   public static function __callStatic($method, $arguments)

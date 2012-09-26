@@ -9,14 +9,14 @@ class Database extends \Servant\Base
   {
     if (strpos($method, 'find_by_') === 0) {
       $test = \Grocery\Helpers::merge(substr($method, 8), $arguments);
-      $row  = static::conn()->select(static::table(), '*', $test)->fetch();
+      $row  = static::conn()->select(static::table(), static::defaults(), $test)->fetch();
 
       return $row ? new static($row->to_a(), 'after_find') : FALSE;
     } elseif (strpos($method, 'count_by_') === 0) {
       return static::count(\Grocery\Helpers::merge(substr($method, 9), $arguments));
     } elseif (strpos($method, 'find_or_create_by_') === 0) {
       $test = \Grocery\Helpers::merge(substr($method, 18), $arguments);
-      $res  = static::conn()->select(static::table(), '*', $test)->fetch();
+      $res  = static::conn()->select(static::table(), static::defaults(), $test)->fetch();
 
       return $res ? new static($res->to_a(), 'after_find') : static::create($test);
     }
@@ -86,33 +86,44 @@ class Database extends \Servant\Base
 
 
 
-  private static function defaults($out)
+  private static function defaults($out = NULL)
   {
     if ( ! $out) {
-      $out = '*';
+      $out = array_keys(static::columns());
     } else {
-      $id  = static::pk();
-      $out = (array) $out; // FIX?
-      ! in_array($id, $out) && array_unshift($out, $id);
+      $out = is_array($out) ? $out : array($out);
     }
+
+    in_array(static::pk(), $out) OR array_unshift($out, static::pk());
+
+    $out = array_filter($out);
+
     return $out;
   }
 
   private static function conn()
-  { // TODO: memoize connection
+  {
     if ( ! defined('static::CONNECTION')) {
-      die("no connection available!!");
+      throw new \Exception("The database connection was not defined.");
     }
 
-    $db = \Grocery\Base::connect(\Servant\Config::get(static::CONNECTION));
 
-    if ( ! isset($db[static::table()])) {
-      $db[static::table()] = static::columns();
-    } elseif ( ! \Grocery\Helpers::locked(static::table())) {
-      \Grocery\Helpers::hydrate($db[static::table()], static::columns());
+    if ( ! isset(static::$registry[static::CONNECTION])) {
+      $lock = \Servant\Config::lock(static::CONNECTION);
+      $dsn = \Servant\Config::get(static::CONNECTION);
+      $db = \Grocery\Base::connect($dsn);
+
+      if ( ! $lock) {
+        if ( ! isset($db[static::table()])) {
+          $db[static::table()] = static::columns();
+        } else {
+          \Grocery\Helpers::hydrate($db[static::table()], static::columns(), static::indexes());
+        }
+      }
+
+      static::$registry[static::CONNECTION] = $db;
     }
-
-    return $db;
+    return static::$registry[static::CONNECTION];
   }
 
 
