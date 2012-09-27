@@ -69,7 +69,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   }
 
 
-  protected function __construct(array $params = array(), $method = NULL, $new = FALSE, array $rel = array())
+  protected function __construct(array $params = array(), $method = NULL, $new = FALSE)
   {
     $this->new_record = (bool) $new;
 
