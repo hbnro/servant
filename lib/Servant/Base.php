@@ -349,7 +349,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         return static::find($params);
     }
 
-    throw new \Exception("Method '$method' missing.");
+    throw new \Exception("Method '$method' missing");
   }
 
   protected static function callback($row, $method)

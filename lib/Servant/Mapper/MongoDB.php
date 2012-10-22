@@ -214,7 +214,7 @@ class MongoDB extends \Servant\Base
   private static function conn()
   {
     if ( ! defined('static::CONNECTION')) {
-      throw new \Exception("The MongoDB connection was not defined.");
+      throw new \Exception("The MongoDB connection was not defined");
     }
 
 

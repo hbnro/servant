@@ -104,7 +104,7 @@ class Database extends \Servant\Base
   private static function conn()
   {
     if ( ! defined('static::CONNECTION')) {
-      throw new \Exception("The database connection was not defined.");
+      throw new \Exception("The database connection was not defined");
     }
 
 
