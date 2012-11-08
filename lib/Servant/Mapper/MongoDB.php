@@ -143,7 +143,7 @@ class MongoDB extends \Servant\Base
     }
   }
 
-  private static function select($fields, $where, $options, $cursor = FALSE)
+  private static function select($fields, $where, $options, \Closure $lambda = NULL)
   {
     $where  = static::parse($where);
     $method = ! empty($options['single']) ? 'findOne' : 'find';
@@ -153,20 +153,25 @@ class MongoDB extends \Servant\Base
       $where['_id'] = static::ids($where['_id']);
     }
 
-    $row = static::conn()->$method($where, $fields);
-
-    ! empty($options['limit']) && $row->limit($options['limit']);
-    ! empty($options['offset']) && $row->skip($options['offset']);
-
+    $set = static::conn()->$method($where, $fields);
 
     if ( ! empty($options['order'])) {
       foreach ($options['order'] as $key => $val) {
         $options['order'][$key] = $val == 'DESC' ? -1 : 1;
       }
-      $row->sort($options['order']);
+      $set->sort($options['order']);
     }
 
-    return is_object($row) && ! $cursor ? iterator_to_array($row) : $row;
+    ! empty($options['limit']) && $set->limit($options['limit']);
+    ! empty($options['offset']) && $set->skip($options['offset']);
+
+    if ($lambda) {
+      while ($set->hasNext()) {
+        $lambda(new static($set->getNext(), 'after_find', FALSE, $options));
+      }
+    } else {
+      return is_object($set) ? iterator_to_array($set) : $set;
+    }
   }
 
   private static function parse($test)
@@ -240,9 +245,7 @@ class MongoDB extends \Servant\Base
 
   protected static function block($get, $where, $params, $lambda)
   {
-    foreach (static::select($get, $where, $params, TRUE) as $row) {
-      $lambda(new static($row, 'after_find', FALSE, $params));
-    }
+    static::select($get, $where, $params, $lambda);
   }
 
   protected static function finder($wich, $what, $where, $options)
@@ -260,9 +263,11 @@ class MongoDB extends \Servant\Base
       case 'all';
         $out = array();
 
-        foreach (static::select($what, $where, $options, TRUE) as $row) {
-          $out []= new static($row, 'after_find', FALSE, $options);
-        }
+        static::select($what, $where, $options, function ($row)
+          use (&$out, $options) {
+            $out []= new static($row, 'after_find', FALSE, $options);
+          });
+
         return $out;
       break;
       default;
