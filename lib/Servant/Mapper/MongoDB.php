@@ -146,32 +146,41 @@ class MongoDB extends \Servant\Base
   private static function select($fields, $where, $options, \Closure $lambda = NULL)
   {
     $where  = static::parse($where);
-    $method = ! empty($options['single']) ? 'findOne' : 'find';
+    $single = ! empty($options['single']);
+    $method = $single ? 'findOne' : 'find';
 
     if (array_key_exists('_id', $where)) {
-      (sizeof($where['_id']) === 1) && $method = 'findOne';
+      if (sizeof($where['_id']) === 1) {
+        $method = 'findOne';
+        $single = TRUE;
+      }
       $where['_id'] = static::ids($where['_id']);
     }
 
     $set = static::conn()->$method($where, $fields);
 
-    if ( ! empty($options['order'])) {
-      foreach ($options['order'] as $key => $val) {
-        $options['order'][$key] = $val == 'DESC' ? -1 : 1;
+    if (is_object($set)) {
+      if ( ! empty($options['order'])) {
+        foreach ($options['order'] as $key => $val) {
+          $options['order'][$key] = $val == 'DESC' ? -1 : 1;
+        }
+        $set->sort($options['order']);
       }
-      $set->sort($options['order']);
+
+      ! empty($options['limit']) && $set->limit($options['limit']);
+      ! empty($options['offset']) && $set->skip($options['offset']);
+
+
+      if ($lambda) {
+        while ($set->hasNext()) {
+          $lambda(new static($set->getNext(), 'after_find', FALSE, $options));
+        }
+      }
+    } elseif ($lambda) {
+      $lambda(new static($set, 'after_find', FALSE, $options));
     }
 
-    ! empty($options['limit']) && $set->limit($options['limit']);
-    ! empty($options['offset']) && $set->skip($options['offset']);
-
-    if ($lambda) {
-      while ($set->hasNext()) {
-        $lambda(new static($set->getNext(), 'after_find', FALSE, $options));
-      }
-    } else {
-      return is_object($set) ? iterator_to_array($set) : $set;
-    }
+    return $set;
   }
 
   private static function parse($test)
@@ -248,34 +257,35 @@ class MongoDB extends \Servant\Base
     static::select($get, $where, $params, $lambda);
   }
 
-  protected static function finder($wich, $what, $where, $options)
+  protected static function finder($which, $what, $where, $options)
   {
-    switch ($wich) {
+    switch ($which) {
       case 'first';
       case 'last';
-        $row = static::select($what, $where, array(
-          'offset' => $wich === 'first' ? 0 : static::count($where) - 1,
+        $row = static::select($what, $where, array_merge(array(
+          'offset' => $which === 'first' ? 0 : static::count($where) - 1,
           'limit' => 1,
-        ));
+          'one' => 1,
+        ), $options));
 
-        return $row ? new static(array_shift($row), 'after_find', FALSE, $options) : FALSE;
+        return $row ?: FALSE;
       break;
       case 'all';
         $out = array();
 
         static::select($what, $where, $options, function ($row)
           use (&$out, $options) {
-            $out []= new static($row, 'after_find', FALSE, $options);
+            $out []= $row;
           });
 
         return $out;
       break;
       default;
         $row = static::select($what, array(
-          '_id' => $wich,
+          '_id' => $which,
         ), $options);
 
-        return $row ? new static($row, 'after_find', FALSE, $options) : FALSE;
+        return $row ?: FALSE;
       break;
     }
   }
