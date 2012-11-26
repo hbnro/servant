@@ -221,7 +221,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public static function find()
   {
-    $wich = 'all';
+    $which = 'all';
 
     $ids =
     $what =
@@ -230,7 +230,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
     foreach (func_get_args() as $one) {
       if (in_array($one, array('all', 'last', 'first'))) {
-        $wich = $one;
+        $which = $one;
       } elseif (\Grocery\Helpers::is_assoc($one)) {
         $params += $one;
       } else {
@@ -250,7 +250,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
     $ids && $where[static::pk()] = sizeof($ids) > 1 ? $ids : end($ids);
 
-    return static::finder($wich, $what, $where, $params);
+    return static::finder($which, $what, $where, $params);
   }
 
   public static function each($params = array(), \Closure $lambda = NULL)
@@ -312,6 +312,8 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       case in_array($method, array('first', 'last', 'all'));
         array_unshift($arguments, $method);
         return call_user_func_array(get_called_class() . '::find', $arguments);
+      case preg_match('/^(\w+)_(first|last|each|all|pick|count)$/', $method, $match);
+        return static::$match[1]()->$match[2]();
       case preg_match('/^(build|create)_by_(.+)$/', $method, $match);
         return static::$match[1](\Grocery\Helpers::merge($match[2], $arguments));
       case preg_match('/^(?:find_)?(all|first|last)_by_(.+)$/', $method, $match);
