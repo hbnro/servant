@@ -102,10 +102,6 @@ class MongoDB extends \Servant\Base
 
   public static function delete_all(array $params = array())
   {
-    if (array_key_exists('_id', $params)) {
-      $params['_id'] = static::ids($params['_id']);
-    }
-
     return static::conn()->remove(static::parse($params));
   }
 
@@ -116,11 +112,6 @@ class MongoDB extends \Servant\Base
     static::callback($tmp, 'before_save');
 
     $data = array('$set' => (array) $tmp);
-
-    if (array_key_exists('_id', $params)) {
-      $params['_id'] = static::ids($params['_id']);
-    }
-
     $out = static::conn()->update(static::parse($params), $data, array('multiple' => TRUE));
 
     static::callback($tmp, 'after_save');
@@ -154,7 +145,6 @@ class MongoDB extends \Servant\Base
         $method = 'findOne';
         $single = TRUE;
       }
-      $where['_id'] = static::ids($where['_id']);
     }
 
     $set = static::conn()->$method($where, $fields);
@@ -191,7 +181,9 @@ class MongoDB extends \Servant\Base
     $out = array();
 
     foreach ($test as $key => $val) {
-      if (\Grocery\Helpers::is_keyword($key)) {
+      if ($key === '_id') {
+        $out['_id'] = static::ids($val);
+      } elseif (\Grocery\Helpers::is_keyword($key)) {
         $out['$' . strtolower($key)] = $val;
       } elseif (strpos($key, '/_or_/')) {
         $out['$or'] = array();
