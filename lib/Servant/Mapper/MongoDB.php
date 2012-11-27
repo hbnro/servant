@@ -179,7 +179,6 @@ class MongoDB extends \Servant\Base
     } elseif ($lambda) {
       $lambda(new static($set, 'after_find', FALSE, $options));
     }
-
     return $set;
   }
 
@@ -268,7 +267,7 @@ class MongoDB extends \Servant\Base
           'one' => 1,
         ), $options));
 
-        return $row ?: FALSE;
+        return $row ? new static($row, 'after_find', FALSE, $options) : FALSE;
       break;
       case 'all';
         $out = array();
