@@ -179,8 +179,7 @@ class MongoDB extends \Servant\Base
     } elseif ($lambda) {
       $lambda(new static($set, 'after_find', FALSE, $options));
     }
-
-    return $set;
+    return new static($set, 'after_find', FALSE, $options);
   }
 
   private static function parse($test)
