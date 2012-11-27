@@ -221,7 +221,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public static function find()
   {
-    $which = 'all';
+    $which = 'one';
 
     $ids =
     $what =

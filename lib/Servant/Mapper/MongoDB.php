@@ -175,9 +175,13 @@ class MongoDB extends \Servant\Base
         while ($set->hasNext()) {
           $lambda(new static($set->getNext(), 'after_find', FALSE, $options));
         }
+      } else {
+        return new static($set->getNext(), 'after_find', FALSE, $options);
       }
     } elseif ($lambda) {
       $lambda(new static($set, 'after_find', FALSE, $options));
+    } else {
+      return new static($set, 'after_find', FALSE, $options);
     }
     return $set;
   }
@@ -264,11 +268,9 @@ class MongoDB extends \Servant\Base
         $row = static::select($what, $where, array_merge(array(
           'offset' => $which === 'first' ? 0 : static::count($where) - 1,
           'limit' => 1,
-          'one' => 1,
         ), $options));
 
-        return $row ? new static($row, 'after_find', FALSE, $options) : FALSE;
-      break;
+        return $row ?: FALSE;
       case 'all';
         $out = array();
 
@@ -278,14 +280,8 @@ class MongoDB extends \Servant\Base
           });
 
         return $out;
-      break;
-      default;
-        $row = static::select($what, array(
-          '_id' => $which,
-        ), $options);
-
-        return $row ?: FALSE;
-      break;
+      default; // one
+        return static::select($what, $where, $options) ?: FALSE;
     }
   }
 

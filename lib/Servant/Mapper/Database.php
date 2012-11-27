@@ -138,23 +138,22 @@ class Database extends \Servant\Base
     }
   }
 
-  protected static function finder($wich, $what, $where, $options)
+  protected static function finder($which, $what, $where, $options)
   {
-    switch ($wich) {
+    switch ($which) {
       case 'first';
       case 'last';
         $options['limit'] = 1;
 
         if (empty($options['order'])) {
           $options['order'] = array(
-            static::pk() => $wich === 'first' ? 'ASC' : 'DESC',
+            static::pk() => $which === 'first' ? 'ASC' : 'DESC',
           );
         }
 
         $row = static::conn()->select(static::defaults($what), $where, $options)->fetch();
 
         return $row ? new static($row->to_a(), 'after_find', FALSE, $options) : FALSE;
-      break;
       case 'all';
         $out = array();
         $res = static::conn()->select(static::defaults($what), $where, $options);
@@ -163,14 +162,9 @@ class Database extends \Servant\Base
           $out []= new static($row->to_a(), 'after_find', FALSE, $options);
         }
         return $out;
-      break;
-      default;
-        $row = static::conn()->select(static::defaults($what), array(
-          static::pk() => $wich,
-        ), $options)->fetch();
-
+      default; // one
+        $row = static::conn()->select(static::defaults($what), $where, $options)->fetch();
         return $row ? new static($row->to_a(), 'after_find', FALSE, $options) : FALSE;
-      break;
     }
   }
 
