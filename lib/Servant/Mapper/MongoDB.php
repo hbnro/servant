@@ -147,33 +147,32 @@ class MongoDB extends \Servant\Base
       }
     }
 
-    $set = static::conn()->$method($where, $fields);
-
-    if (is_object($set)) {
-      if ( ! empty($options['order'])) {
-        foreach ($options['order'] as $key => $val) {
-          $options['order'][$key] = $val == 'DESC' ? -1 : 1;
+    if ($set = static::conn()->$method($where, $fields)) {
+      if (is_object($set)) {
+        if ( ! empty($options['order'])) {
+          foreach ($options['order'] as $key => $val) {
+            $options['order'][$key] = $val == 'DESC' ? -1 : 1;
+          }
+          $set->sort($options['order']);
         }
-        $set->sort($options['order']);
-      }
 
-      ! empty($options['limit']) && $set->limit($options['limit']);
-      ! empty($options['offset']) && $set->skip($options['offset']);
+        ! empty($options['limit']) && $set->limit($options['limit']);
+        ! empty($options['offset']) && $set->skip($options['offset']);
 
 
-      if ($lambda) {
-        while ($set->hasNext()) {
-          $lambda(new static($set->getNext(), 'after_find', FALSE, $options));
+        if ($lambda) {
+          while ($set->hasNext()) {
+            $lambda(new static($set->getNext(), 'after_find', FALSE, $options));
+          }
+        } elseif ($set->hasNext()) {
+          return new static($set->getNext(), 'after_find', FALSE, $options);
         }
+      } elseif ($lambda) {
+        $lambda(new static($set, 'after_find', FALSE, $options));
       } else {
-        return new static($set->getNext(), 'after_find', FALSE, $options);
+        return new static($set, 'after_find', FALSE, $options);
       }
-    } elseif ($lambda) {
-      $lambda(new static($set, 'after_find', FALSE, $options));
-    } else {
-      return new static($set, 'after_find', FALSE, $options);
     }
-    return $set;
   }
 
   private static function parse($test)
