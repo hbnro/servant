@@ -6,7 +6,7 @@
   }],
   "require": {
     "php": ">=5.3",
-    "habanero/pallid": "v1.1",
+    "habanero/staple": "v1.2",
     "habanero/grocery": "v0.3.2"
   },
   "autoload": {
