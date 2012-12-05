@@ -11,14 +11,14 @@ class MongoDB extends \Servant\Base
       $where = \Grocery\Helpers::merge(substr($method, 8), $arguments);
       $row   = static::select(array(), $where, array('single' => TRUE));
 
-      return $row ? new static($row, 'after_find') : FALSE;
+      return $row ?: FALSE;
     } elseif (strpos($method, 'count_by_') === 0) {
       return static::count(\Grocery\Helpers::merge(substr($method, 9), $arguments));
     } elseif (strpos($method, 'find_or_create_by_') === 0) {
       $where = \Grocery\Helpers::merge(substr($method, 18), $arguments);
-      $res   = static::select(array(), $where, array('single' => TRUE));
+      $row   = static::select(array(), $where, array('single' => TRUE));
 
-      return $res ? new static($res, 'after_find') : static::create($where);
+      return $row ?: static::create($where);
     }
 
     return parent::__callStatic($method, $arguments);
@@ -147,33 +147,32 @@ class MongoDB extends \Servant\Base
       }
     }
 
-    $set = static::conn()->$method($where, $fields);
-
-    if (is_object($set)) {
-      if ( ! empty($options['order'])) {
-        foreach ($options['order'] as $key => $val) {
-          $options['order'][$key] = $val == 'DESC' ? -1 : 1;
+    if ($set = static::conn()->$method($where, $fields)) {
+      if (is_object($set)) {
+        if ( ! empty($options['order'])) {
+          foreach ($options['order'] as $key => $val) {
+            $options['order'][$key] = $val == 'DESC' ? -1 : 1;
+          }
+          $set->sort($options['order']);
         }
-        $set->sort($options['order']);
-      }
 
-      ! empty($options['limit']) && $set->limit($options['limit']);
-      ! empty($options['offset']) && $set->skip($options['offset']);
+        ! empty($options['limit']) && $set->limit($options['limit']);
+        ! empty($options['offset']) && $set->skip($options['offset']);
 
 
-      if ($lambda) {
-        while ($set->hasNext()) {
-          $lambda(new static($set->getNext(), 'after_find', FALSE, $options));
+        if ($lambda) {
+          while ($set->hasNext()) {
+            $lambda(new static($set->getNext(), 'after_find', FALSE, $options));
+          }
+        } elseif ($set->hasNext()) {
+          return new static($set->getNext(), 'after_find', FALSE, $options);
         }
+      } elseif ($lambda) {
+        $lambda(new static($set, 'after_find', FALSE, $options));
       } else {
-        return new static($set->getNext(), 'after_find', FALSE, $options);
+        return new static($set, 'after_find', FALSE, $options);
       }
-    } elseif ($lambda) {
-      $lambda(new static($set, 'after_find', FALSE, $options));
-    } elseif ($set) {
-      return new static($set, 'after_find', FALSE, $options);
     }
-    return $set;
   }
 
   private static function parse($test)
