@@ -294,7 +294,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public static function table()
   {
-    return defined('static::TABLE') ? static::TABLE : \Servant\Helpers::underscore(get_called_class());
+    return defined('static::TABLE') ? static::TABLE : \Staple\Helpers::underscore(get_called_class());
   }
 
   public static function indexes()
