@@ -12,6 +12,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public static $columns = array();
   public static $indexes = array();
+  public static $related_to = array();
 
   protected static $registry = array();
 
@@ -127,11 +128,15 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return $this->props[static::pk()];
   }
 
-  public function attr($key, $val = NULL)
+  public function attr($key, $val = NULL, $fake = FALSE)
   {
-    if ( ! array_key_exists($key, $this->columns())) {
+    $test = FALSE;
+    $test = isset($this->props[$key]) OR array_key_exists($key, $this->columns());
+
+    if ( ! $fake && ! $test) {
       die("undefined prop $key!!!");
     }
+
 
     if (func_num_args() === 1) {
       return isset($this->props[$key]) ? $this->props[$key] : NULL;
@@ -212,6 +217,11 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   public static function get()
   {
     return \Servant\Binding\Query::fetch(get_called_class(), 'select', func_get_args());
+  }
+
+  public static function with($from)
+  {
+    return \Servant\Binding\Eager::load(get_called_class(), $from);
   }
 
   public static function where(array $params)
