@@ -169,7 +169,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public function is_valid($skip = FALSE)
   {
-    if ( ! empty(static::$validate)) {
+    if ( ! $skip && ! empty(static::$validate)) {
       $test = \Servant\Binding\Validate::setup($this, static::$validate);
       return $test->run();
     }
@@ -184,7 +184,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return ! empty($this->changed);
   }
 
-  public function update(array $props = array()) {
+  public function update(array $props = array(), $skip = FALSE) {
     if ( ! empty($props)) {
       foreach ($props as $key => $value) {
         $this->$key = $value;
@@ -192,7 +192,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     }
 
     if ($this->has_changed()) {
-      return $this->save();
+      return $this->save($skip);
     }
     return FALSE;
   }
