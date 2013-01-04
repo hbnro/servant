@@ -132,7 +132,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   public function attr($key, $val = NULL, $fake = FALSE)
   {
     $test = FALSE;
-    $test = isset($this->props[$key]) OR array_key_exists($key, $this->columns());
+    $test = (isset($this->props[$key]) OR array_key_exists($key, static::columns()));
 
     if ( ! $fake && ! $test) {
       throw new \Exception("Undefined '$key' property");

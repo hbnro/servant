@@ -96,9 +96,7 @@ class Validate
   {
     return array($field, array(function ($value)
       use ($params) {
-        $default = ! empty($params['accept']) ? addslashes($params['accept']) : 'on';
-
-        return $value === $default;
+        return $value === ( ! empty($params['accept']) ? addslashes($params['accept']) : 'on');
       }));
   }
 
