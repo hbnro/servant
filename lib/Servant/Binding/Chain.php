@@ -32,7 +32,7 @@ class Chain
       return $this;
     }
 
-    die("undefined chained property!!");
+    throw new \Exception("Undefined '$key' property (chained");
   }
 
   public function __call($method, $arguments)

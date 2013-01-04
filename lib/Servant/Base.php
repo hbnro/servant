@@ -134,11 +134,8 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     $test = isset($this->props[$key]) OR array_key_exists($key, $this->columns());
 
     if ( ! $fake && ! $test) {
-      die("undefined prop $key!!!");
-    }
-
-
-    if (func_num_args() === 1) {
+      throw new \Exception("Undefined '$key' property");
+    } elseif (func_num_args() === 1) {
       return isset($this->props[$key]) ? $this->props[$key] : NULL;
     } else {
       if ( ! in_array($key, $this->changed)) {
