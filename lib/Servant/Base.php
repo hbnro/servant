@@ -12,6 +12,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public static $columns = array();
   public static $indexes = array();
+  public static $validate = array();
   public static $related_to = array();
 
   protected static $registry = array();
@@ -164,6 +165,15 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   public function is_new()
   {
     return $this->new_record;
+  }
+
+  public function is_valid($skip = FALSE)
+  {
+    if ( ! empty(static::$validate)) {
+      $test = \Servant\Binding\Validate::setup($this, static::$validate);
+      return $test->run();
+    }
+    return TRUE;
   }
 
   public function has_changed($field = FALSE)

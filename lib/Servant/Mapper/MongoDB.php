@@ -35,32 +35,34 @@ class MongoDB extends \Servant\Base
     return (string) $this->props[$this->pk()];
   }
 
-  public function save()
+  public function save($skip = FALSE)
   {
-    static::callback($this, 'before_save');
+    if ($this->is_valid($skip)) {
+      static::callback($this, 'before_save');
 
-    $fields = static::stamp($this);
+      $fields = static::stamp($this);
 
-    unset($fields['_id']);
+      unset($fields['_id']);
 
-    if ($this->is_new()) {
-      if (static::conn()->insert($fields, array('safe' => TRUE))) {
-        $this->new_record = FALSE;
-        $this->props = $fields;
+      if ($this->is_new()) {
+        if (static::conn()->insert($fields, array('safe' => TRUE))) {
+          $this->new_record = FALSE;
+          $this->props = $fields;
+        }
+      } else {
+        static::conn()->update(array(
+          '_id' => $this->props['_id'],
+        ), array(
+          '$set' => $fields,
+        ));
       }
-    } else {
-      static::conn()->update(array(
-        '_id' => $this->props['_id'],
-      ), array(
-        '$set' => $fields,
-      ));
+
+
+      static::callback($this, 'after_save');
+      $this->changed = array();
+
+      return TRUE;
     }
-
-
-    static::callback($this, 'after_save');
-    $this->changed = array();
-
-    return TRUE;
   }
 
   public function fields($updated = FALSE)

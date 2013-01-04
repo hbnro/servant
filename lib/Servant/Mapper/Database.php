@@ -32,25 +32,27 @@ class Database extends \Servant\Base
 
   public function save()
   {
-    static::callback($this, 'before_save');
+    if ($this->is_valid($skip)) {
+      static::callback($this, 'before_save');
 
-    $fields = static::stamp($this);
+      $fields = static::stamp($this);
 
-    unset($fields[static::pk()]);
+      unset($fields[static::pk()]);
 
-    if ($this->is_new()) {
-      $this->props[static::pk()] = static::conn()->insert($fields, static::pk());
-      $this->new_record = FALSE;
-    } else {
-      static::conn()->update($fields, array(
-        static::pk() => $this->props[static::pk()],
-      ));
+      if ($this->is_new()) {
+        $this->props[static::pk()] = static::conn()->insert($fields, static::pk());
+        $this->new_record = FALSE;
+      } else {
+        static::conn()->update($fields, array(
+          static::pk() => $this->props[static::pk()],
+        ));
+      }
+
+      static::callback($this, 'after_save');
+      $this->changed = array();
+
+      return TRUE;
     }
-
-    static::callback($this, 'after_save');
-    $this->changed = array();
-
-    return TRUE;
   }
 
   public static function count(array $params = array())
