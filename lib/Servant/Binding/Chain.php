@@ -37,16 +37,30 @@ class Chain
 
   public function __call($method, $arguments)
   {
-    $model = $this->model;
+    switch ($method) {
+      case 'get';
+        $this->scopes []= array('select' => $arguments);
+        return $this;
+      case 'where';
+      case 'select';
+      case 'order';
+      case 'group';
+      case 'limit';
+      case 'offset';
+        $this->scopes []= array($method => end($arguments));
+        return $this;
+      default;
+        $model = $this->model;
 
-    if (in_array($method, static::$retrieve)) {
-      array_unshift($arguments, $this->params());
-      return call_user_func_array("$model::$method", $arguments);
-    } elseif (isset($model::$$method)) {
-      return $this->$method->all($this->params());
+        if (in_array($method, static::$retrieve)) {
+          array_unshift($arguments, $this->params());
+          return call_user_func_array("$model::$method", $arguments);
+        } elseif (isset($model::$$method)) {
+          return $this->$method->all($this->params());
+        }
+
+        return call_user_func_array("$model::$method", $arguments);
     }
-
-    return call_user_func_array("$model::$method", $arguments);
   }
 
 

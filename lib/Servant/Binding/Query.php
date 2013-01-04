@@ -26,6 +26,8 @@ class Query
         return sizeof($out) > 1 ? $out : end($out);
       break;
       case 'count';
+        return call_user_func("$this->model::$method");
+      break;
       case 'first';
       case 'last';
       case 'all';
@@ -41,13 +43,19 @@ class Query
         return $this;
       break;
       default;
+        $klass = $this->model;
+
+        if (isset($klass::$$method)) {
+          return $klass::$method($this->defs);
+        }
+
         if ($method === 'each') {
           array_unshift($arguments, $this->defs);
         } else {
           $arguments []= $this->defs;
         }
 
-        return call_user_func_array("$this->model::$method", $arguments);
+        return call_user_func_array("$klass::$method", $arguments);
       break;
     }
   }
