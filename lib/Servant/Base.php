@@ -138,7 +138,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     } elseif (func_num_args() === 1) {
       return isset($this->props[$key]) ? $this->props[$key] : NULL;
     } else {
-      if ( ! in_array($key, $this->changed)) {
+      if ( ! $fake && ! in_array($key, $this->changed)) {
         $this->changed []= $key;
       }
       $this->props[$key] = $val;
