@@ -45,4 +45,10 @@ class Failure extends \Grocery\Handle\Hasher
     return sizeof($this->errors);
   }
 
+
+  public function all()
+  {
+    return $this->errors;
+  }
+
 }
