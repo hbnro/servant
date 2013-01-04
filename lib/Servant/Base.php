@@ -155,7 +155,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         $out[$key] = $this->props[$key];
       }
 
-      $out[$this->pk()] = $this->id();
+      $this->id() && $out[$this->pk()] = $this->id();
 
       return $out;
     }

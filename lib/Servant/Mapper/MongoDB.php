@@ -77,7 +77,7 @@ class MongoDB extends \Servant\Base
       }
     }
 
-    $out['_id'] = (string) $out['_id'];
+    isset($out['_id']) && $out['_id'] = (string) $out['_id'];
 
     return $out;
   }

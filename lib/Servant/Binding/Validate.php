@@ -35,7 +35,7 @@ class Validate
 
     $check->model  = $on;
     $check->params = $rules;
-    $check->data   = $on->fields();
+    $check->data   = $on->fields(TRUE);
 
     return $check;
   }
