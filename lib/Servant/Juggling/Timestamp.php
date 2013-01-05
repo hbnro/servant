@@ -6,7 +6,7 @@ class Timestamp
 {
 
   protected $format = 'Y-m-d H:i:s';
-  protected $time = NULL;
+  protected $timestamp = NULL;
 
   private static $available = array(
                     'date' => 'Y-m-d',
@@ -30,15 +30,19 @@ class Timestamp
   }
 
 
+  public function time()
+  {
+    return $this->timestamp;
+  }
 
   public function get()
   {
-    return date($this->format, $this->time);
+    return date($this->format, $this->timestamp);
   }
 
   public function set($value)
   {
-    $this->time = is_numeric($value) ? $value : strtotime($value);
+    $this->timestamp = is_numeric($value) ? $value : strtotime($value);
   }
 
 }
