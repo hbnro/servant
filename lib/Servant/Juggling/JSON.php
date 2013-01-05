@@ -15,6 +15,11 @@ class JSON extends \Servant\Juggling\Base
     $this->data[$key] = $value;
   }
 
+  public function __toString()
+  {
+    return $this->get();
+  }
+
 
   public function get()
   {
