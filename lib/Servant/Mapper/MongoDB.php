@@ -65,24 +65,6 @@ class MongoDB extends \Servant\Base
     }
   }
 
-  public function fields($updated = FALSE)
-  {
-    $out = $this->props;
-
-    if ($updated) {
-      foreach ($out as $key => $val) {
-        if ( ! in_array($key, $this->changed)) {
-          unset($out[$key]);
-        }
-      }
-    }
-
-    isset($out['_id']) && $out['_id'] = (string) $out['_id'];
-
-    return $out;
-  }
-
-
   public static function count(array $params = array())
   {
     return (int) static::conn()->count(static::parse( ! empty($params['where']) ? $params['where'] : $params));
