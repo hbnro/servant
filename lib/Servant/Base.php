@@ -75,8 +75,25 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   {
     $this->new_record = (bool) $new;
 
-    foreach (array_keys(static::columns()) as $key) {
+    foreach (static::columns() as $key => $set) {
       $this->props[$key] = isset($params[$key]) ? $params[$key] : NULL;
+
+      switch ($set['type']) {
+        case 'date'; case 'time'; case 'datetime'; case 'timestamp';
+          $this->props[$key] = new \Servant\Juggling\Timestamp($this->props[$key], $set['type']);
+        break;
+        case 'list';
+          $this->props[$key] = new \Servant\Juggling\Listing($this->props[$key]);
+        break;
+        case 'json';
+          $this->props[$key] = new \Servant\Juggling\JSON($this->props[$key]);
+        break;
+        case 'hash';
+          $this->props[$key] = new \Servant\Juggling\Base($this->props[$key]);
+        break;
+        default;
+        break;
+      }
     }
 
     static::callback($this, $method);
@@ -142,7 +159,12 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       if ( ! $fake && ! in_array($key, $this->changed)) {
         $this->changed []= $key;
       }
-      $this->props[$key] = $val;
+
+      if (is_object($this->props[$key]) && method_exists($this->props[$key], 'set')) {
+        call_user_func(array($this->props[$key], 'set'), $val);
+      } else {
+        $this->props[$key] = $val;
+      }
     }
   }
 
@@ -379,20 +401,31 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   protected static function stamp($row)
   {
     $current = @date('Y-m-d H:i:s');
-
     $props   = static::columns();
     $fields  = $row->props;
+
+    $get = function ($value) {
+        if (is_object($value) && method_exists($value, 'get')) {
+          return $value->get();
+        }
+        return $value;
+      };
+
 
     if ( ! $row->is_new()) {
       foreach ($fields as $key => $val) {
         if ( ! in_array($key, $row->changed)) {
           unset($fields[$key]);
+        } else {
+          $fields[$key] = $get($val);
         }
       }
     } else {
       foreach ($fields as $key => $val) {
         if ($val === NULL) {
           unset($fields[$key]);
+        } else {
+          $fields[$key] = $get($val);
         }
       }
 
