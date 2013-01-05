@@ -249,10 +249,30 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return print_r($this->fields(), TRUE);
   }
 
-
   public static function get()
   {
     return \Servant\Binding\Query::fetch(get_called_class(), 'select', func_get_args());
+  }
+
+  public static function map()
+  {
+    $out =  array();
+    $args = func_get_args();
+    $lambda = array_pop($args);
+    $params = array_shift($args) ?: array();
+
+    if ( ! $lambda OR ! ($lambda instanceof \Closure)) {
+      $lambda = function ($row) {
+          return $row->fields();
+        };
+    }
+
+    static::each($params, function ($row)
+      use (&$out, $lambda) {
+        $out []= $lambda($row);
+      });
+
+    return $out;
   }
 
   public static function with($from)
