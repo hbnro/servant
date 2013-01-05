@@ -2,7 +2,7 @@
 
 namespace Servant\Juggling;
 
-class Base extends \Grocery\Handle\Hasher
+class Base implements \Countable, \Serializable, \ArrayAccess, \IteratorAggregate
 {
 
   protected $data = array();
@@ -13,32 +13,6 @@ class Base extends \Grocery\Handle\Hasher
     $this->set($scalar);
   }
 
-  public function __get($key)
-  {
-    return isset($this->data[$key]) ? $this->data[$key] : NULL;
-  }
-
-  public function __set($key, $value)
-  {
-    $this->data[$key] = $value;
-  }
-
-  public function __toString()
-  {
-    return serialize($this->get());
-  }
-
-
-
-  public function get()
-  {
-    return $this->data;
-  }
-
-  public function set($value)
-  {
-    $this->data = \Servant\Helpers::hashify($value);
-  }
 
 
   public function serialize()
@@ -49,6 +23,26 @@ class Base extends \Grocery\Handle\Hasher
   public function unserialize($data)
   {
     $this->data = unserialize($data);
+  }
+
+  public function offsetSet($offset, $value)
+  {
+    $this->$offset = $value;
+  }
+
+  public function offsetExists($offset)
+  {
+    return isset($this->$offset);
+  }
+
+  public function offsetUnset($offset)
+  {
+    unset($this->$offset);
+  }
+
+  public function offsetGet($offset)
+  {
+    return $this->$offset;
   }
 
   public function getIterator()

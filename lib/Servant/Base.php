@@ -85,11 +85,11 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         case 'list';
           $this->props[$key] = new \Servant\Juggling\Listing($this->props[$key]);
         break;
+        case 'hash';
+          $this->props[$key] = new \Servant\Juggling\Hasher($this->props[$key]);
+        break;
         case 'json';
           $this->props[$key] = new \Servant\Juggling\JSON($this->props[$key]);
-        break;
-        case 'hash';
-          $this->props[$key] = new \Servant\Juggling\Base($this->props[$key]);
         break;
         default;
         break;
