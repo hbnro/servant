@@ -2,7 +2,7 @@
 
 namespace Servant\Juggling;
 
-class Listing extends \Servant\Juggling\Base
+class Listing extends \Servant\Binding\Base
 {
 
   public function __toString()

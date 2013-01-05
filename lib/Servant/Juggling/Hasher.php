@@ -2,7 +2,7 @@
 
 namespace Servant\Juggling;
 
-class Hasher extends \Servant\Juggling\Base
+class Hasher extends \Servant\Binding\Base
 {
 
   protected $data = array();

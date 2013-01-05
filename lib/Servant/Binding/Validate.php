@@ -11,15 +11,15 @@ class Validate
   private $params = array();
 
   private static $messages = array(
-                    'acceptance_of' => 'must be accepted',
-                    'confirmation_of' => "doesn't match confirmation",
-                    'exclusion_of' => 'is reserved',
-                    'format_of' => 'is invalid',
-                    'inclusion_of' => 'is not included in the list',
-                    'length_of' => "length doesn't fit",
-                    'numericality_of' => 'is not a number',
-                    'presence_of' => "can't be empty",
-                    'uniqueness_of' => 'has already been taken',
+                    'acceptance' => 'must be accepted',
+                    'confirmation' => "doesn't match confirmation",
+                    'exclusion' => 'is reserved',
+                    'format' => 'is invalid',
+                    'inclusion' => 'is not included in the list',
+                    'length' => "length doesn't fit",
+                    'numericality' => 'is not a number',
+                    'presence' => "can't be empty",
+                    'uniqueness' => 'has already been taken',
                   );
 
 
@@ -51,16 +51,20 @@ class Validate
 
     foreach ($this->params as $key => $val)
     {
-      if ((substr($key, -3) === '_of') && method_exists($this, substr($key, 0, -3))) {
-        @list($field, $set) = call_user_func_array(array($this, substr($key, 0, -3)), (array) $val);
+      $key = is_string($key) ? $key : (string) $val;
+      $val = is_array($val) ? $val : array();
+
+
+      if (strpos($key, '_of_')) {
+        @list($fn, $field) = explode('_of_', $key, 2);
+
+        $val += compact('field');
+        $set  = call_user_func(array($this, $fn), $val);
 
         isset($rules[$field]) OR $rules[$field] = array();
 
-        $debug = static::$messages[$key];
-
-        if (is_array($val) && ($tmp = end($val))) {
-          isset($tmp['message']) && $debug = $tmp['message'];
-        }
+        $debug = static::$messages[$fn];
+        isset($val['message']) && $debug = $val['message'];
 
         foreach ($set as $one) {
           $rules[$field][$debug] = $one;
@@ -87,54 +91,55 @@ class Validate
 
 
 
-  private function presence($field, array $params = array())
+  private function presence(array $params)
   {
-    return array($field, array('required'));
+    return array('required');
   }
 
-  private function acceptance($field, array $params = array())
+  private function acceptance(array $params)
   {
-    return array($field, array(function ($value)
+    return array(function ($value)
       use ($params) {
         return $value === ( ! empty($params['accept']) ? $params['accept'] : 'on');
-      }));
+      });
   }
 
-  private function confirmation($field, array $params = array())
+  private function confirmation(array $params)
   {
-    return array($field, array('required', "={$field}_confirmation"));
+    return array('required', "=$params[field]_confirmation");
   }
 
-  private function exclusion($field, array $params = array())
+  private function exclusion(array $params)
   {
-    @list(, $callback) = $this->inclusion($field, $params);
-    return array($field, array(function ($value)
+    @list(, $callback) = $this->inclusion($params['field'], $params);
+
+    return array(function ($value)
       use ($callback) {
         return ! $callback($value);
-      }));
+      });
   }
 
-  private function format($field, array $params = array())
+  private function format(array $params)
   {
-    return array($field, array(function ($value)
+    return array(function ($value)
       use ($params) {
         $regex = ! empty($params['with']) ? $params['with'] : '//';
 
         return @preg_match($regex, $value);
-      }));
+      });
   }
 
-  private function inclusion($field, array $params = array())
+  private function inclusion(array $params)
   {
-    return array($field, array(function ($value)
+    return array(function ($value)
       use ($params) {
         return in_array($value, ! empty($params['in']) ? (array) $params['in'] : array());
-      }));
+      });
   }
 
-  private function length($field, array $params = array())
+  private function length(array $params)
   {
-    return array($field, array(function ($value)
+    return array(function ($value)
       use ($params) {
         $value = is_array($value) ? sizeof($value) : strlen($value);
         $equal = ! empty($params['is']) ? $params['is'] : FALSE;
@@ -153,31 +158,31 @@ class Validate
 
           return ($value >= $min) && ($value <= $max);
         }
-      }));
+      });
   }
 
-  private function numericality($field, array $params = array())
+  private function numericality(array $params)
   {
-    return array($field, array(function ($value)
+    return array(function ($value)
       use ($params) {
         return ! empty($params['integer']) ? preg_match('/^[-+]?\d+$/', $value) : is_numeric($value);
-      }));
+      });
   }
 
-  private function uniqueness($field, array $params = array())
+  private function uniqueness(array $params)
   {
     $model = ! empty($params['model']) ? $params['model'] : get_class($this->model);
     $model = \Staple\Helpers::classify(\Staple\Inflector::singularize($model));
 
+    $field = ! empty($params['field']) ? $params['field'] : $params['field'];
     $klass = ! empty($params['class']) ? $params['class'] : $model;
-    $field = ! empty($params['field']) ? $params['field'] : $field;
 
-    $callback = "$model::count_by_$field";
+    $callback = "$model::count_by_$params[field]";
 
-    return array($field, array(function ($value)
+    return array(function ($value)
       use ($callback) {
         return ! call_user_func($callback, $value);
-      }));
+      });
   }
 
 }

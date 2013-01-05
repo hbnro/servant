@@ -30,7 +30,7 @@ class Database extends \Servant\Base
   }
 
 
-  public function save()
+  public function save($skip = FALSE)
   {
     if ($this->is_valid($skip)) {
       static::callback($this, 'before_save');

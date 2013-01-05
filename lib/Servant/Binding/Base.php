@@ -1,6 +1,6 @@
 <?php
 
-namespace Servant\Juggling;
+namespace Servant\Binding;
 
 class Base implements \Countable, \Serializable, \ArrayAccess, \IteratorAggregate
 {

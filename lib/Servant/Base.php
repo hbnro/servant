@@ -77,6 +77,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
     foreach (static::columns() as $key => $set) {
       $this->props[$key] = isset($params[$key]) ? $params[$key] : NULL;
+      $new && $this->props[$key] && $this->changed []= $key;
 
       switch ($set['type']) {
         case 'date'; case 'time'; case 'datetime'; case 'timestamp';
@@ -160,7 +161,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         $this->changed []= $key;
       }
 
-      if (is_object($this->props[$key]) && method_exists($this->props[$key], 'set')) {
+      if ( ! $fake && is_object($this->props[$key]) && method_exists($this->props[$key], 'set')) {
         call_user_func(array($this->props[$key], 'set'), $val);
       } else {
         $this->props[$key] = $val;
@@ -170,18 +171,19 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public function fields($updated = FALSE)
   {
-    if ($updated) {
-      $out = array();
+    $out = array();
 
-      foreach ($this->changed as $key) {
-        $out[$key] = $this->props[$key];
+    foreach ($this->props as $key => $value) {
+      if ($updated) {
+        in_array($key, $this->changed) && $out[$key] = $value;
+      } else {
+        $out[$key] = $value;
       }
-
-      $this->id() && $out[$this->pk()] = $this->id();
-
-      return $out;
     }
-    return $this->props;
+
+    $this->id() && $out[$this->pk()] = $this->id();
+
+    return static::values($out);
   }
 
   public function is_new()
@@ -196,6 +198,11 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       return $test->run();
     }
     return TRUE;
+  }
+
+  public function has_errors()
+  {
+    return isset($this->errors);
   }
 
   public function has_changed($field = FALSE)
@@ -398,41 +405,25 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     method_exists(get_called_class(), $method) && static::$method($row);
   }
 
-  protected static function stamp($row)
+  protected static function values(array $from)
   {
-    $current = @date('Y-m-d H:i:s');
-    $props   = static::columns();
-    $fields  = $row->props;
-
-    $get = function ($value) {
+    return array_map(function ($value) {
         if (is_object($value) && method_exists($value, 'get')) {
           return $value->get();
         }
         return $value;
-      };
+      }, $from);
+  }
 
+  protected static function stamp($row)
+  {
+    $current = @date('Y-m-d H:i:s');
+    $fields  = $row->fields(TRUE);
+    $props   = static::columns();
 
-    if ( ! $row->is_new()) {
-      foreach ($fields as $key => $val) {
-        if ( ! in_array($key, $row->changed)) {
-          unset($fields[$key]);
-        } else {
-          $fields[$key] = $get($val);
-        }
-      }
-    } else {
-      foreach ($fields as $key => $val) {
-        if ($val === NULL) {
-          unset($fields[$key]);
-        } else {
-          $fields[$key] = $get($val);
-        }
-      }
-
-      if (array_key_exists('created_at', $props)) {
-        $fields['created_at'] = $current;
-        $row->created_at = $current;
-      }
+    if ($row->is_new() && array_key_exists('created_at', $props)) {
+      $row->created_at = $current;
+      $fields['created_at'] = $current;
     }
 
     if (array_key_exists('modified_at', $props)) {
@@ -440,7 +431,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       $row->modified_at = $current;
     }
 
-    return $fields;
+    return static::values($fields);
   }
 
 }

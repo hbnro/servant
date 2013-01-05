@@ -2,7 +2,7 @@
 
 namespace Servant\Juggling;
 
-class JSON extends \Servant\Juggling\Base
+class JSON extends \Servant\Binding\Base
 {
 
   public function __get($key)
