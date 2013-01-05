@@ -5,7 +5,8 @@ namespace Servant\Juggling;
 class Timestamp
 {
 
-  private $format = 'Y-m-d H:i:s';
+  protected $format = 'Y-m-d H:i:s';
+  protected $time = NULL;
 
   private static $available = array(
                     'date' => 'Y-m-d',
@@ -32,12 +33,12 @@ class Timestamp
 
   public function get()
   {
-    return date($this->format, $this->data);
+    return date($this->format, $this->time);
   }
 
   public function set($value)
   {
-    $this->data = is_numeric($value) ? $value : strtotime($value);
+    $this->time = is_numeric($value) ? $value : strtotime($value);
   }
 
 }
