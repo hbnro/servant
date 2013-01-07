@@ -77,7 +77,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
     foreach (static::columns() as $key => $set) {
       $this->props[$key] = isset($params[$key]) ? $params[$key] : NULL;
-      $new && $this->props[$key] && $this->changed []= $key;
+      $new && ($this->props[$key] !== NULL) && $this->changed []= $key;
 
       switch ( ! empty($set['type']) ? $set['type'] : FALSE) { // TODO: determine right type?
         case 'date'; case 'time'; case 'datetime'; case 'timestamp';
@@ -171,8 +171,8 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         $this->changed []= $key;
       }
 
-      if ( ! $fake && is_object($this->props[$key]) && method_exists($this->props[$key], 'set')) {
-        call_user_func(array($this->props[$key], 'set'), $val);
+      if ( ! $fake && isset($this->props[$key]) && is_object($this->props[$key])) {
+        method_exists($this->props[$key], 'set') && call_user_func(array($this->props[$key], 'set'), $val);
       } else {
         $this->props[$key] = $val;
       }
