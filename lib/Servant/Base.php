@@ -79,7 +79,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       $this->props[$key] = isset($params[$key]) ? $params[$key] : NULL;
       $new && $this->props[$key] && $this->changed []= $key;
 
-      switch ($set['type']) {
+      switch ( ! empty($set['type']) ? $set['type'] : FALSE) { // TODO: determine right type?
         case 'date'; case 'time'; case 'datetime'; case 'timestamp';
           $this->props[$key] = new \Servant\Juggling\Timestamp($this->props[$key], $set['type']);
         break;
@@ -126,14 +126,24 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     $what  = '';
     $class = get_called_class();
 
-    if (preg_match('/^(?:first|last|count|all)_by_/', $method)) {
-      return $class::apply($method, $arguments);
-    } elseif (preg_match('/^(.+?)_by_(.+?)$/', $method, $match)) {
+    if (preg_match('/^(.+?)_by_(.+?)$/', $method, $match)) {
       $method = $match[1];
       $what   = "find_by_$match[2]";
+      $top    = array_pop($arguments);
+
+      $arguments []= array($match[2] => $top);
     }
 
-    return call_user_func_array(array($this->$method, $what ?: 'all'), $arguments);
+
+    switch ($method) {
+      case 'count';
+        return $class::count(end($arguments));
+      case 'find'; case 'all'; case 'first'; case 'last';
+        ($method === 'find') OR array_unshift($arguments, $method);
+        return call_user_func_array("$class::find", $arguments);
+      default;
+        return call_user_func_array(array($this->$method, $what ?: 'all'), $arguments);
+    }
   }
 
   public function __toString()
@@ -386,6 +396,8 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         return static::find($match[1], array(
           'where' => \Grocery\Helpers::merge($match[2], $arguments),
         ));
+      case preg_match('/^count_by_(.+)$/', $method, $match);
+        return static::count(\Grocery\Helpers::merge($match[1], $arguments));
       case preg_match('/^each_by_(.+)$/', $method, $match);
         $test = array_pop($arguments);
 
