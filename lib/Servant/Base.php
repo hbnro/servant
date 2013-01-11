@@ -25,6 +25,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
                       'json' => '\\Servant\\Juggling\\JSON',
                       'list' => '\\Servant\\Juggling\\Enum',
                       'hash' => '\\Servant\\Juggling\\Hash',
+                      'set' => '\\Servant\\Juggling\\Set',
                     );
 
 
