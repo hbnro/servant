@@ -5,6 +5,11 @@ namespace Servant\Juggling;
 class JSON extends \Servant\Binding\Base
 {
 
+  public function __construct($scalar)
+  {
+    $this->from_s($scalar);
+  }
+
   public function __get($key)
   {
     return isset($this->data[$key]) ? $this->data[$key] : NULL;
@@ -17,16 +22,21 @@ class JSON extends \Servant\Binding\Base
 
   public function __toString()
   {
-    return $this->get();
+    return $this->to_s();
   }
 
 
-  public function get()
+  public function to_v()
+  {
+    return $this->data;
+  }
+
+  public function to_s()
   {
     return json_encode($this->data);
   }
 
-  public function set($value)
+  public function from_s($value)
   {
     $this->data = \Servant\Helpers::jsonify($value);
   }

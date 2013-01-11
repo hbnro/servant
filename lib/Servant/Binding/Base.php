@@ -8,13 +8,6 @@ class Base implements \Countable, \Serializable, \ArrayAccess, \IteratorAggregat
   protected $data = array();
 
 
-  public function __construct($scalar)
-  {
-    $this->set($scalar);
-  }
-
-
-
   public function serialize()
   {
     return serialize($this->data);

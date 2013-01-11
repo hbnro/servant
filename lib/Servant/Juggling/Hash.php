@@ -2,11 +2,13 @@
 
 namespace Servant\Juggling;
 
-class Hasher extends \Servant\Binding\Base
+class Hash extends \Servant\Binding\Base
 {
 
-  protected $data = array();
-
+  public function __construct($scalar)
+  {
+    $this->from_s($scalar);
+  }
 
   public function __get($key)
   {
@@ -20,17 +22,22 @@ class Hasher extends \Servant\Binding\Base
 
   public function __toString()
   {
-    return serialize($this->get());
+    return $this->to_s();
   }
 
 
 
-  public function get()
+  public function to_v()
   {
     return $this->data;
   }
 
-  public function set($value)
+  public function to_s()
+  {
+    return serialize($this->data);
+  }
+
+  public function from_s($value)
   {
     $this->data = \Servant\Helpers::hashify($value);
   }

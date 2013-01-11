@@ -17,6 +17,17 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   protected static $registry = array();
 
+  protected static $jugglings = array(
+                      'timestamp' => '\\Servant\\Juggling\\Date',
+                      'datetime' => '\\Servant\\Juggling\\Date',
+                      'date' => '\\Servant\\Juggling\\Date',
+                      'time' => '\\Servant\\Juggling\\Date',
+                      'json' => '\\Servant\\Juggling\\JSON',
+                      'list' => '\\Servant\\Juggling\\Enum',
+                      'hash' => '\\Servant\\Juggling\\Hash',
+                    );
+
+
 
 
   public function serialize()
@@ -78,23 +89,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     foreach (static::columns() as $key => $set) {
       $this->props[$key] = isset($params[$key]) ? $params[$key] : NULL;
       $new && ($this->props[$key] !== NULL) && $this->changed []= $key;
-
-      switch ( ! empty($set['type']) ? $set['type'] : FALSE) { // TODO: determine right type?
-        case 'date'; case 'time'; case 'datetime'; case 'timestamp';
-          $this->props[$key] = new \Servant\Juggling\Timestamp($this->props[$key], $set['type']);
-        break;
-        case 'list';
-          $this->props[$key] = new \Servant\Juggling\Listing($this->props[$key]);
-        break;
-        case 'hash';
-          $this->props[$key] = new \Servant\Juggling\Hasher($this->props[$key]);
-        break;
-        case 'json';
-          $this->props[$key] = new \Servant\Juggling\JSON($this->props[$key]);
-        break;
-        default;
-        break;
-      }
+      $this->props[$key] = static::type($this->props[$key], $set);
     }
 
     static::callback($this, $method);
@@ -172,7 +167,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       }
 
       if ( ! $fake && isset($this->props[$key]) && is_object($this->props[$key])) {
-        method_exists($this->props[$key], 'set') && call_user_func(array($this->props[$key], 'set'), $val);
+        method_exists($this->props[$key], 'from_s') && $this->props[$key]->from_s($val);
       } else {
         $this->props[$key] = $val;
       }
@@ -193,7 +188,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
     $this->id() && $out[$this->pk()] = $this->id();
 
-    return static::values($out);
+    return static::values($out, TRUE);
   }
 
   public function is_new()
@@ -437,11 +432,14 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     method_exists(get_called_class(), $method) && static::$method($row);
   }
 
-  protected static function values(array $from)
+  protected static function values(array $from, $raw = FALSE)
   {
-    return array_map(function ($value) {
-        if (is_object($value) && method_exists($value, 'get')) {
-          return $value->get();
+    $callback = $raw ? 'to_v' : 'to_s';
+
+    return array_map(function ($value)
+      use ($callback) {
+        if (is_object($value) && method_exists($value, $callback)) {
+          return $value->$callback();
         }
         return $value;
       }, $from);
@@ -464,6 +462,15 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     }
 
     return static::values($fields);
+  }
+
+  private static function type($value, array $from)
+  {
+    if (isset($from['type'], static::$jugglings[$from['type']])) {
+      $klass = static::$jugglings[$from['type']];
+      return new $klass($value, $from['type']);
+    }
+    return $value;
   }
 
 }

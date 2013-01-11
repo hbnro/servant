@@ -5,13 +5,23 @@ namespace Servant\Juggling;
 class Listing extends \Servant\Binding\Base
 {
 
+  public function __construct($scalar)
+  {
+    $this->from_s($scalar);
+  }
+
   public function __toString()
   {
-    return $this->get();
+    return $this->to_s();
   }
 
 
-  public function get()
+  public function to_v()
+  {
+    return $this->data;
+  }
+
+  public function to_s()
   {
     $out = array();
 
@@ -25,7 +35,7 @@ class Listing extends \Servant\Binding\Base
     return join(', ', $out);
   }
 
-  public function set($value)
+  public function from_s($value)
   {
     $this->data = \Servant\Helpers::listify($value);
   }

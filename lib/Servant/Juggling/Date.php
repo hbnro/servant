@@ -2,12 +2,13 @@
 
 namespace Servant\Juggling;
 
-class Timestamp
+class Date
 {
 
-  protected $format = 'Y-m-d H:i:s';
-  protected $timestamp = NULL;
-  protected $datetime = NULL;
+  private $format = 'Y-m-d H:i:s';
+
+  private $timestamp = NULL;
+  private $datetime = NULL;
 
   private static $available = array(
                     'date' => 'Y-m-d',
@@ -19,11 +20,9 @@ class Timestamp
 
   public function __construct($scalar, $format = 'timestamp')
   {
-    if (static::$available[$format]) {
-      $this->format = static::$available[$format];
-      $this->datetime = new \DateTime($scalar);
-    }
-    $this->set($scalar);
+    $this->format = static::$available[$format];
+    $this->datetime = new \DateTime($scalar);
+    $this->from_s($scalar);
   }
 
   public function __call($method, array $arguments)
@@ -36,16 +35,21 @@ class Timestamp
 
   public function __toString()
   {
-    return $this->get();
+    return $this->to_s();
   }
 
 
-  public function get()
+  public function to_v()
+  {
+    return $this->to_s();
+  }
+
+  public function to_s()
   {
     return $this->datetime->format($this->format);
   }
 
-  public function set($value)
+  public function from_s($value)
   {
     $this->timestamp = is_numeric($value) ? $value : strtotime($value);
   }
