@@ -20,6 +20,11 @@ class Date
 
   public function __construct($scalar, $format = 'timestamp')
   {
+    if ($scalar instanceof \MongoDate) {
+      @list(, $sec) = explode(' ', (string) $scalar);
+      $scalar = date('r', $sec);
+    }
+
     $this->format = static::$available[$format];
     $this->datetime = new \DateTime($scalar);
     $this->from_s($scalar);
@@ -51,7 +56,7 @@ class Date
 
   public function from_s($value)
   {
-    $this->timestamp = is_numeric($value) ? $value : strtotime($value);
+    $this->set_timestamp(is_numeric($value) ? $value : strtotime($value));
   }
 
 }

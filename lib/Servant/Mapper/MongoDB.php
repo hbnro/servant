@@ -260,4 +260,25 @@ class MongoDB extends \Servant\Base
     }
   }
 
+  protected static function stamp($row)
+  {
+    $old = parent::stamp($row);
+
+    foreach ($row->columns() as $type => $set) {
+      if (isset($old[$type])) {
+        switch ($type) {
+          case 'date';
+          case 'time';
+          case 'datetime';
+          case 'timestamp';
+            $old[$type] = new \MongoDate(strtotime($old[$type]));
+          default;
+          break;
+        }
+      }
+    }
+
+    return $old;
+  }
+
 }
