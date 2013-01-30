@@ -20,10 +20,13 @@ class Date
 
   public function __construct($scalar, $format = 'timestamp')
   {
-    if ($scalar instanceof \MongoDate) {
-      @list(, $sec) = explode(' ', (string) $scalar);
-      $scalar = date('r', $sec);
+    if (($scalar = (string) $scalar) && is_numeric($scalar)) {
+      @list(, $sec) = explode(' ', $scalar);
+
+      $scalar = $sec ?: $scalar;
+      $scalar = "@$scalar";
     }
+
 
     $this->format = static::$available[$format];
     $this->datetime = new \DateTime($scalar);

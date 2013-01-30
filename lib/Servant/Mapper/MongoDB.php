@@ -175,28 +175,34 @@ class MongoDB extends \Servant\Base
           $out['$or'] []= array($one => $val);
         }
       } elseif (preg_match('/^(.+?)(?:\s+(!=?|[<>]=?|<>|NOT|R?LIKE)\s*)$/', $key, $match)) {
+        $old = isset($out[$match[1]]) ? $out[$match[1]] : array();
+
+        if ($tmp = static::field($val)) {
+          $val = $tmp;
+        }
+
         switch ($match[2]) {
           case 'NOT'; case '<>'; case '!'; case '!=';
-            $out[$match[1]] = array(is_array($val) ? '$nin': '$ne' => $val);
+            $out[$match[1]] = array_merge($old, array(is_array($val) ? '$nin': '$ne' => $val));
           break;
           case '<'; case '<=';
-            $out[$match[1]] = array('$lt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val);
+            $out[$match[1]] = array_merge($old, array('$lt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val));
           break;
           case '>'; case '>=';
-            $out[$match[1]] = array('$gt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val);
+            $out[$match[1]] = array_merge($old, array('$gt' . (substr($match[2], -1) === '=' ? 'e' : '') => $val));
           break;
           case 'RLIKE';
-            $out[$match[1]] = array('$regex' => str_replace('\\', '\\\\', $val), '$options' => 'us');
+            $out[$match[1]] = array_merge($old, array('$regex' => str_replace('\\', '\\\\', $val), '$options' => 'us'));
           break;
           case 'LIKE';
             $val = preg_quote($val, '/');
             $val = strtr("^$val$", array('^%' => '', '%$' => '', '%' => '.*'));
 
-            $out[$match[1]] = array('$regex' => $val, '$options' => 'uis');
+            $out[$match[1]] = array_merge($old, array('$regex' => $val, '$options' => 'uis'));
           break;
         }
       } else {
-        $out[$key] = is_array($val) ? array('$in' => $val) : $val;
+        $out[$key] = is_array($val) ? array_merge($old, array('$in' => $val)) : $val;
       }
     }
 
@@ -262,23 +268,23 @@ class MongoDB extends \Servant\Base
 
   protected static function stamp($row)
   {
+    $out = array();
     $old = parent::stamp($row);
 
-    foreach ($row->columns() as $type => $set) {
-      if (isset($old[$type])) {
-        switch ($type) {
-          case 'date';
-          case 'time';
-          case 'datetime';
-          case 'timestamp';
-            $old[$type] = new \MongoDate(strtotime($old[$type]));
-          default;
-          break;
-        }
+    foreach ($old as $key => $val) {
+      if ($tmp = static::field($val)) {
+        $old[$key] = $tmp;
       }
     }
 
     return $old;
+  }
+
+  protected static function field($value)
+  { // TODO: there is a better way?
+    if (preg_match('/^\d{4}\D\d{2}\D\d{2}(?=\D?\d{2}:\d{2}(?::\d{2})|$)$/', $value)) {
+      return new \MongoDate(strtotime($value));
+    }
   }
 
 }
