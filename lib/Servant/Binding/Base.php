@@ -7,7 +7,6 @@ class Base implements \Countable, \Serializable, \ArrayAccess, \IteratorAggregat
 
   protected $data = array();
 
-
   public function serialize()
   {
     return serialize($this->data);

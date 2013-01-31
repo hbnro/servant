@@ -11,13 +11,11 @@ class Eager
   {
   }
 
-
   public function __call($method, $arguments)
   {
     if ( ! in_array($method, array('all', 'find', 'first', 'last', 'each'))) {
       throw new \Exception("Unable to execute '$method' method");
     }
-
 
     $out =
     $params = array();
@@ -28,7 +26,6 @@ class Eager
         $params += $tmp;
       }
     }
-
 
     $include = $this->params;
     $klass   = $this->params['parent'];
@@ -95,7 +92,6 @@ class Eager
     return $load;
   }
 
-
   private static function fetch($props, $params)
   {
     $out =
@@ -109,7 +105,6 @@ class Eager
         $out []= $row->$fk;
       });
 
-
     $out = array_unique($out);
     $set = compact('select');
 
@@ -122,8 +117,5 @@ class Eager
 
     return $rel;
   }
-
-
-
 
 }

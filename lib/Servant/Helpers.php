@@ -12,6 +12,7 @@ class Helpers
         $value = array();
       }
     }
+
     return $value;
   }
 
@@ -23,6 +24,7 @@ class Helpers
     } elseif ($value === NULL) {
       $value = array();
     }
+
     return $value;
   }
 
@@ -41,6 +43,7 @@ class Helpers
     } elseif ($value === NULL) {
       $value = array();
     }
+
     return $value;
   }
 
@@ -53,7 +56,6 @@ class Helpers
       $tmp[key($one['key'])] = ! empty($one['unique']);
     }
     unset($tmp['_id']);
-
 
     foreach ($indexes as $key => $val) {
       $on = is_numeric($key) ? FALSE : (bool) $val;

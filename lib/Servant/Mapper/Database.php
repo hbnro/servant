@@ -21,14 +21,12 @@ class Database extends \Servant\Base
       return $res ? new static($res->to_a(), 'after_find') : static::create($test);
     }
 
-
     if (method_exists(static::conn(), $method)) {
       return call_user_func_array(array(static::conn(), $method), $arguments);
     }
 
     return parent::__callStatic($method, $arguments);
   }
-
 
   public function save($skip = FALSE)
   {
@@ -86,11 +84,9 @@ class Database extends \Servant\Base
     static::callback($tmp, 'after_save');
   }
 
-
-
   private static function defaults($out = NULL)
   {
-    if ( ! $out) {
+    if (! $out) {
       $out = array_keys(static::columns());
     } else {
       $out = is_array($out) ? $out : array($out);
@@ -109,7 +105,6 @@ class Database extends \Servant\Base
       throw new \Exception("The database connection was not defined");
     }
 
-
     if (isset(static::$registry[static::CONNECTION])) {
       $db = static::$registry[static::CONNECTION];
     } else {
@@ -118,7 +113,6 @@ class Database extends \Servant\Base
 
       static::$registry[static::CONNECTION] = $db;
     }
-
 
     if ( ! \Servant\Config::lock(static::CONNECTION)) {
       if ( ! isset($db[static::table()])) {
@@ -130,7 +124,6 @@ class Database extends \Servant\Base
 
     return $db->{static::table()};
   }
-
 
   protected static function block($get, $where, $params, $lambda)
   {
@@ -163,9 +156,11 @@ class Database extends \Servant\Base
         while ($row = $res->fetch()) {
           $out []= new static($row->to_a(), 'after_find', FALSE, $options);
         }
+
         return $out;
       default; // one
         $row = static::conn()->select(static::defaults($what), $where, $options)->fetch();
+
         return $row ? new static($row->to_a(), 'after_find', FALSE, $options) : FALSE;
     }
   }

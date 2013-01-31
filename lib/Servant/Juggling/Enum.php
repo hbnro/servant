@@ -15,7 +15,6 @@ class Enum extends \Servant\Binding\Base
     return $this->to_s();
   }
 
-
   public function to_v()
   {
     return $this->data;

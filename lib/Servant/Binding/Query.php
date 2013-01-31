@@ -26,11 +26,13 @@ class Query
         return sizeof($out) > 1 ? $out : end($out);
       break;
       case 'count';
+
         return call_user_func("$this->model::$method");
       break;
       case 'first';
       case 'last';
       case 'all';
+
         return call_user_func("$this->model::$method", $this->defs);
       break;
       case 'where';
@@ -40,6 +42,7 @@ class Query
       case 'limit';
       case 'offset';
         $this->defs[$method] = sizeof($arguments) > 1 ? $arguments : array_shift($arguments);
+
         return $this;
       break;
       default;

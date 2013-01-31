@@ -17,7 +17,6 @@ class Date
                     'timestamp' => 'Y-m-d H:i:s',
                   );
 
-
   public function __construct($scalar, $format = 'timestamp')
   {
     if (($scalar = (string) $scalar) && is_numeric($scalar)) {
@@ -26,7 +25,6 @@ class Date
       $scalar = $sec ?: $scalar;
       $scalar = "@$scalar";
     }
-
 
     $this->format = static::$available[$format];
     $this->datetime = new \DateTime($scalar);
@@ -45,7 +43,6 @@ class Date
   {
     return $this->to_s();
   }
-
 
   public function to_v()
   {

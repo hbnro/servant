@@ -20,7 +20,6 @@ class Set
     return $this->to_s();
   }
 
-
   public function to_v()
   {
     return (boolean) $this->value;

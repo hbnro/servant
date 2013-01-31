@@ -29,7 +29,6 @@ class MongoDB extends \Servant\Base
     return print_r($this->fields(), TRUE);
   }
 
-
   public function id()
   {
     return (string) $this->props[$this->pk()];
@@ -56,7 +55,6 @@ class MongoDB extends \Servant\Base
           '$set' => $fields,
         ));
       }
-
 
       static::callback($this, 'after_save');
       $this->changed = array();
@@ -103,8 +101,6 @@ class MongoDB extends \Servant\Base
     return $out;
   }
 
-
-
   private static function ids($set)
   {
     if (is_array($set)) {
@@ -112,6 +108,7 @@ class MongoDB extends \Servant\Base
       foreach ($set as $k => $v) {
         $tmp []= new \MongoId($v);
       }
+
       return array('$in' => $tmp);
     } else {
       return new \MongoId($set);
@@ -142,7 +139,6 @@ class MongoDB extends \Servant\Base
 
         ! empty($options['limit']) && $set->limit($options['limit']);
         ! empty($options['offset']) && $set->skip($options['offset']);
-
 
         if ($lambda) {
           while ($set->hasNext()) {
@@ -215,7 +211,6 @@ class MongoDB extends \Servant\Base
       throw new \Exception("The MongoDB connection was not defined");
     }
 
-
     if (isset(static::$registry[static::CONNECTION])) {
       $db = static::$registry[static::CONNECTION];
     } else {
@@ -227,14 +222,12 @@ class MongoDB extends \Servant\Base
       static::$registry[static::CONNECTION] = $db;
     }
 
-
     if ( ! \Servant\Config::lock(static::CONNECTION)) {
       \Servant\Helpers::reindex($db->{static::table()}, static::indexes());
     }
 
     return $db->{static::table()};
   }
-
 
   protected static function block($get, $where, $params, $lambda)
   {
@@ -262,6 +255,7 @@ class MongoDB extends \Servant\Base
 
         return $out;
       default; // one
+
         return static::select($what, $where, $options) ?: FALSE;
     }
   }

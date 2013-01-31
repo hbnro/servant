@@ -22,12 +22,9 @@ class Validate
                     'uniqueness' => 'has already been taken',
                   );
 
-
   private function __construct()
   {
   }
-
-
 
   public static function setup($on, array $rules)
   {
@@ -49,11 +46,9 @@ class Validate
   {
     $rules = array();
 
-    foreach ($this->params as $key => $val)
-    {
+    foreach ($this->params as $key => $val) {
       $key = is_string($key) ? $key : (string) $val;
       $val = is_array($val) ? $val : array();
-
 
       if (strpos($key, '_of_')) {
         @list($fn, $field) = explode('_of_', $key, 2);
@@ -72,12 +67,11 @@ class Validate
       } else {
         if (isset($rules[$key])) {
           $rules[$key] = array_merge($rules[$key], $val);
-        } else  {
+        } else {
           $rules[$key] = (array) $val;
         }
       }
     }
-
 
     \Staple\Validation::setup($rules);
 
@@ -88,8 +82,6 @@ class Validate
       return TRUE;
     }
   }
-
-
 
   private function presence(array $params)
   {

@@ -19,8 +19,6 @@ class Failure extends \Servant\Binding\Base
     $this->data[$key] = $value;
   }
 
-
-
   public static function from(array $set, array $data = array())
   {
     $list = new static;
@@ -32,7 +30,6 @@ class Failure extends \Servant\Binding\Base
     return $list;
   }
 
-
   public function getIterator()
   {
     return new \ArrayIterator($this->data);
@@ -42,7 +39,6 @@ class Failure extends \Servant\Binding\Base
   {
     return sizeof($this->data);
   }
-
 
   public function all()
   {

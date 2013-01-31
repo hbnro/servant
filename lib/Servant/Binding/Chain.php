@@ -15,8 +15,6 @@ class Chain
                     'count',
                   );
 
-
-
   private function __construct()
   {
   }
@@ -29,6 +27,7 @@ class Chain
       if ( ! in_array($key, $this->scopes)) {
         $this->scopes []= $model::$$key;
       }
+
       return $this;
     }
 
@@ -40,6 +39,7 @@ class Chain
     switch ($method) {
       case 'get';
         $this->scopes []= array('select' => $arguments);
+
         return $this;
       case 'where';
       case 'select';
@@ -48,12 +48,14 @@ class Chain
       case 'limit';
       case 'offset';
         $this->scopes []= array($method => end($arguments));
+
         return $this;
       default;
         $model = $this->model;
 
         if (in_array($method, static::$retrieve)) {
           array_unshift($arguments, $this->params());
+
           return call_user_func_array("$model::$method", $arguments);
         } elseif (isset($model::$$method)) {
           return $this->$method->all($this->params());
@@ -62,7 +64,6 @@ class Chain
         return call_user_func_array("$model::$method", $arguments);
     }
   }
-
 
   public static function from($model, array $xargs = array())
   {
@@ -73,8 +74,6 @@ class Chain
 
     return $obj;
   }
-
-
 
   private function params()
   {

@@ -28,9 +28,6 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
                       'set' => '\\Servant\\Juggling\\Set',
                     );
 
-
-
-
   public function serialize()
   {
     return serialize($this->props);
@@ -82,7 +79,6 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return new \ArrayIterator($this->props);
   }
 
-
   protected function __construct(array $params = array(), $method = NULL, $new = FALSE)
   {
     $this->new_record = (bool) $new;
@@ -103,6 +99,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     if (method_exists($this, $callback)) {
       return $this->$callback();
     }
+
     return $this->attr($key);
   }
 
@@ -130,14 +127,16 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       $arguments []= array($match[2] => $top);
     }
 
-
     switch ($method) {
       case 'count';
+
         return $class::count(end($arguments));
       case 'find'; case 'all'; case 'first'; case 'last';
         ($method === 'find') OR array_unshift($arguments, $method);
+
         return call_user_func_array("$class::find", $arguments);
       default;
+
         return call_user_func_array(array($this->$method, $what ?: 'all'), $arguments);
     }
   }
@@ -146,7 +145,6 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   {
     return $this->to_s();
   }
-
 
   public function id()
   {
@@ -158,7 +156,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     $test = FALSE;
     $test = (isset($this->props[$key]) OR array_key_exists($key, static::columns()));
 
-    if ( ! $fake && ! $test) {
+    if (! $fake && ! $test) {
       throw new \Exception("Undefined '$key' property");
     } elseif (func_num_args() === 1) {
       return isset($this->props[$key]) ? $this->props[$key] : NULL;
@@ -201,8 +199,10 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   {
     if ( ! $skip && ! empty(static::$validate)) {
       $test = \Servant\Binding\Validate::setup($this, static::$validate);
+
       return $test->run();
     }
+
     return TRUE;
   }
 
@@ -216,10 +216,12 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     if ($field) {
       return in_array($field, $this->changed);
     }
+
     return ! empty($this->changed);
   }
 
-  public function update(array $props = array(), $skip = FALSE) {
+  public function update(array $props = array(), $skip = FALSE)
+  {
     if ( ! empty($props)) {
       foreach ($props as $key => $value) {
         $this->$key = $value;
@@ -229,6 +231,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     if ($this->has_changed()) {
       return $this->save($skip);
     }
+
     return FALSE;
   }
 
@@ -238,7 +241,6 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       static::pk() => $this->props[static::pk()],
     ));
   }
-
 
   public function to_json()
   {
@@ -356,6 +358,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   {
     $obj = static::build($params);
     $obj->save($skip);
+
     return $obj;
   }
 
@@ -383,16 +386,21 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     switch (TRUE) {
       case in_array($method, array('first', 'last', 'all'));
         array_unshift($arguments, $method);
+
         return call_user_func_array(get_called_class() . '::find', $arguments);
       case preg_match('/^(\w+)_(first|last|each|all|pick|count)$/', $method, $match);
+
         return static::$match[1]()->$match[2]();
       case preg_match('/^(build|create)_by_(.+)$/', $method, $match);
+
         return static::$match[1](\Grocery\Helpers::merge($match[2], $arguments));
       case preg_match('/^(?:find_)?(all|first|last)_by_(.+)$/', $method, $match);
+
         return static::find($match[1], array(
           'where' => \Grocery\Helpers::merge($match[2], $arguments),
         ));
       case preg_match('/^count_by_(.+)$/', $method, $match);
+
         return static::count(\Grocery\Helpers::merge($match[1], $arguments));
       case preg_match('/^each_by_(.+)$/', $method, $match);
         $test = array_pop($arguments);
@@ -409,7 +417,6 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       case $method === 'pick';
         $limit = 1;
         $params = array();
-
 
         foreach ($arguments as $one) {
           if (is_numeric($one)) {
@@ -442,6 +449,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         if (is_object($value) && method_exists($value, $callback)) {
           return $value->$callback();
         }
+
         return $value;
       }, $from);
   }
@@ -469,8 +477,10 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
   {
     if (isset($from['type'], static::$jugglings[$from['type']])) {
       $klass = static::$jugglings[$from['type']];
+
       return new $klass($value, $from['type']);
     }
+
     return $value;
   }
 

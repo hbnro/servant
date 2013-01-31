@@ -7,8 +7,6 @@ class Config
 
   private static $bag = array();
 
-
-
   public static function set($key, $value = NULL, $locked = FALSE)
   {
     static::$bag[$key] = compact('value', 'locked');
