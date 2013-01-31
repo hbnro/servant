@@ -276,7 +276,7 @@ class MongoDB extends \Servant\Base
 
   protected static function field($value)
   { // TODO: there is a better way?
-    if (preg_match('/^\d{4}\D\d{2}\D\d{2}(?=\D?\d{2}:\d{2}(?::\d{2})|$)$/', $value)) {
+    if (preg_match('/^\d{4}\D\d{2}\D\d{2}(?:\D?\d{2}:\d{2}(?::\d{2})?)?$/', $value)) {
       return new \MongoDate(strtotime($value));
     }
   }
