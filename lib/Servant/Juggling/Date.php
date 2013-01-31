@@ -19,7 +19,7 @@ class Date
 
   public function __construct($scalar, $format = 'timestamp')
   {
-    if (($scalar = (string) $scalar) && is_numeric($scalar)) {
+    if (($scalar = (string) $scalar) && preg_match('/^[.\d]+\D\d+$/', $scalar)) {
       @list(, $sec) = explode(' ', $scalar);
 
       $scalar = $sec ?: $scalar;
