@@ -2,7 +2,7 @@
 
 namespace Servant\Juggling;
 
-class Listing extends \Servant\Binding\Base
+class Enum extends \Servant\Binding\Base
 {
 
   public function __construct($scalar)
