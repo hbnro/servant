@@ -79,14 +79,20 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return new \ArrayIterator($this->props);
   }
 
-  protected function __construct(array $params = array(), $method = NULL, $new = FALSE)
+  protected function __construct(array $fields = array(), $method = NULL, $new = FALSE)
   {
-    $this->new_record = (bool) $new;
+    $defs = static::columns();
 
-    foreach (static::columns() as $key => $set) {
-      $this->props[$key] = isset($params[$key]) ? $params[$key] : NULL;
-      $new && ($this->props[$key] !== NULL) && $this->changed []= $key;
-      $this->props[$key] = static::type($this->props[$key], $set);
+    $this->new_record = (bool) $new;
+    $this->props = array_combine(array_keys($defs), array_fill(0, sizeof($defs), NULL));
+
+    foreach ($fields as $key => $val) {
+      if (isset($defs[$key])) {
+        $this->props[$key] = static::type($val, $defs[$key]);
+        $new && $this->changed []= $key;
+      } else {
+        $this->props[$key] = $val;
+      }
     }
 
     static::callback($this, $method);
