@@ -13,6 +13,8 @@ class Chain
                     'pick',
                     'each',
                     'count',
+                    'first',
+                    'last',
                   );
 
   private function __construct()
