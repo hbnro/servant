@@ -65,7 +65,7 @@ class MongoDB extends \Servant\Base
 
   public static function count(array $params = array())
   {
-    return (int) static::conn()->count(static::parse( ! empty($params['where']) ? $params['where'] : $params));
+    return (int) static::conn()->count(static::parse( ! empty($params['where']) ? $params['where'] : array()));
   }
 
   public static function columns()
