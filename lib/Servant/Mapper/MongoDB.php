@@ -24,11 +24,6 @@ class MongoDB extends \Servant\Base
     return parent::__callStatic($method, $arguments);
   }
 
-  public function __toString()
-  {
-    return print_r($this->fields(), TRUE);
-  }
-
   public function id()
   {
     return (string) $this->props[$this->pk()];
@@ -40,6 +35,7 @@ class MongoDB extends \Servant\Base
       static::callback($this, 'before_save');
 
       $fields = static::stamp($this);
+      $fields = static::values($fields);
 
       unset($fields['_id']);
 

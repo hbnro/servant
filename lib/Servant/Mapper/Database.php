@@ -34,6 +34,7 @@ class Database extends \Servant\Base
       static::callback($this, 'before_save');
 
       $fields = static::stamp($this);
+      $fields = static::values($fields);
 
       unset($fields[static::pk()]);
 
@@ -45,7 +46,6 @@ class Database extends \Servant\Base
           static::pk() => $this->props[static::pk()],
         ));
       }
-
       static::callback($this, 'after_save');
       $this->changed = array();
 

@@ -179,7 +179,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     }
   }
 
-  public function fields($updated = FALSE)
+  public function fields($updated = FALSE, $raw = FALSE)
   {
     $out = array();
 
@@ -193,7 +193,9 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
     $this->id() && $out[$this->pk()] = $this->id();
 
-    return static::values($out, TRUE);
+    $out = static::values($out, $raw);
+
+    return $out;
   }
 
   public function is_new()
@@ -255,12 +257,12 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public function to_a()
   {
-    return $this->fields();
+    return $this->fields(FALSE, TRUE);
   }
 
   public function to_s()
   {
-    return print_r($this->fields(), TRUE);
+    return print_r($this->to_a(), TRUE);
   }
 
   public static function get()
@@ -476,7 +478,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
       $row->modified_at = $current;
     }
 
-    return static::values($fields);
+    return $fields;
   }
 
   private static function type($value, array $from)
