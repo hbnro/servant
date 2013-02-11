@@ -455,7 +455,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return array_map(function ($value)
       use ($callback) {
         if (is_object($value) && method_exists($value, $callback)) {
-          return $value->$callback();
+          return addslashes($value->$callback());
         }
 
         return $value;
