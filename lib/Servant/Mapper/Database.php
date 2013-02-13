@@ -99,7 +99,7 @@ class Database extends \Servant\Base
     $out = array_filter($out);
 
     foreach ($out as $k => $v) {
-      $out[$k] = "$top.$v";
+      strpos($k, '(') OR $out[$k] = "$top.$v";
     }
 
     return $out;
@@ -133,7 +133,7 @@ class Database extends \Servant\Base
 
   protected static function block($get, $where, $params, $lambda)
   {
-    $res = static::conn()->select(static::defaults($get), $where, $params);
+    $res = static::conn()->select(static::defaults($get, $params), $where, $params);
     while ($row = $res->fetch()) {
       $lambda(new static($row->to_a(), 'after_find', FALSE, $params));
     }
