@@ -12,8 +12,6 @@ class MongoDB extends \Servant\Base
       $row   = static::select(array(), $where, array('single' => TRUE));
 
       return $row ?: FALSE;
-    } elseif (strpos($method, 'count_by_') === 0) {
-      return static::count(\Grocery\Helpers::merge(substr($method, 9), $arguments));
     } elseif (strpos($method, 'find_or_create_by_') === 0) {
       $where = \Grocery\Helpers::merge(substr($method, 18), $arguments);
       $row   = static::select(array(), $where, array('single' => TRUE));

@@ -12,8 +12,6 @@ class Database extends \Servant\Base
       $row  = static::conn()->select(static::defaults(), $test)->fetch();
 
       return $row ? new static($row->to_a(), 'after_find') : FALSE;
-    } elseif (strpos($method, 'count_by_') === 0) {
-      return static::count(\Grocery\Helpers::merge(substr($method, 9), $arguments));
     } elseif (strpos($method, 'find_or_create_by_') === 0) {
       $test = \Grocery\Helpers::merge(substr($method, 18), $arguments);
       $res  = static::conn()->select(static::defaults(), $test)->fetch();
