@@ -82,7 +82,7 @@ class Database extends \Servant\Base
     static::callback($tmp, 'after_save');
   }
 
-  private static function defaults($out = NULL)
+  private static function defaults($out = NULL, array $params = array())
   {
     if (! $out) {
       $out = array_keys(static::columns());
@@ -90,7 +90,10 @@ class Database extends \Servant\Base
       $out = is_array($out) ? $out : array($out);
     }
 
-    in_array(static::pk(), $out) OR array_unshift($out, static::pk());
+    // TODO: user cases
+    if (empty($params['group'])) {
+      in_array(static::pk(), $out) OR array_unshift($out, static::pk());
+    }
 
     $top = static::table();
     $out = array_filter($out);
@@ -149,12 +152,12 @@ class Database extends \Servant\Base
           );
         }
 
-        $row = static::conn()->select(static::defaults($what), $where, $options)->fetch();
+        $row = static::conn()->select(static::defaults($what, $options), $where, $options)->fetch();
 
         return $row ? new static($row->to_a(), 'after_find', FALSE, $options) : FALSE;
       case 'all';
         $out = array();
-        $res = static::conn()->select(static::defaults($what), $where, $options);
+        $res = static::conn()->select(static::defaults($what, $options), $where, $options);
 
         while ($row = $res->fetch()) {
           $out []= new static($row->to_a(), 'after_find', FALSE, $options);
@@ -162,7 +165,7 @@ class Database extends \Servant\Base
 
         return $out;
       default; // one
-        $row = static::conn()->select(static::defaults($what), $where, $options)->fetch();
+        $row = static::conn()->select(static::defaults($what, $options), $where, $options)->fetch();
 
         return $row ? new static($row->to_a(), 'after_find', FALSE, $options) : FALSE;
     }
