@@ -92,7 +92,12 @@ class Database extends \Servant\Base
 
     in_array(static::pk(), $out) OR array_unshift($out, static::pk());
 
+    $top = static::table();
     $out = array_filter($out);
+
+    foreach ($out as $k => $v) {
+      $out[$k] = "$top.$v";
+    }
 
     return $out;
   }
