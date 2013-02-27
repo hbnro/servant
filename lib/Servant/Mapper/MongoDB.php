@@ -12,8 +12,6 @@ class MongoDB extends \Servant\Base
       $row   = static::select(array(), $where, array('single' => TRUE));
 
       return $row ?: FALSE;
-    } elseif (strpos($method, 'count_by_') === 0) {
-      return static::count(\Grocery\Helpers::merge(substr($method, 9), $arguments));
     } elseif (strpos($method, 'find_or_create_by_') === 0) {
       $where = \Grocery\Helpers::merge(substr($method, 18), $arguments);
       $row   = static::select(array(), $where, array('single' => TRUE));
@@ -272,6 +270,10 @@ class MongoDB extends \Servant\Base
 
   protected static function field($value)
   { // TODO: there is a better way?
+    if ( ! is_string($value)) {
+      return $value;
+    }
+
     if (preg_match('/^\d{4}\D\d{2}\D\d{2}(?:\D?\d{2}:\d{2}(?::\d{2})?)?$/', $value)) {
       return new \MongoDate(strtotime($value));
     }

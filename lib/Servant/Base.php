@@ -409,7 +409,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         ));
       case preg_match('/^count_by_(.+)$/', $method, $match);
 
-        return static::count(\Grocery\Helpers::merge($match[1], $arguments));
+        return static::count(array('where' => \Grocery\Helpers::merge($match[1], $arguments)));
       case preg_match('/^each_by_(.+)$/', $method, $match);
         $test = array_pop($arguments);
 

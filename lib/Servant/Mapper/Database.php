@@ -12,8 +12,6 @@ class Database extends \Servant\Base
       $row  = static::conn()->select(static::defaults(), $test)->fetch();
 
       return $row ? new static($row->to_a(), 'after_find') : FALSE;
-    } elseif (strpos($method, 'count_by_') === 0) {
-      return static::count(\Grocery\Helpers::merge(substr($method, 9), $arguments));
     } elseif (strpos($method, 'find_or_create_by_') === 0) {
       $test = \Grocery\Helpers::merge(substr($method, 18), $arguments);
       $res  = static::conn()->select(static::defaults(), $test)->fetch();
@@ -84,7 +82,7 @@ class Database extends \Servant\Base
     static::callback($tmp, 'after_save');
   }
 
-  private static function defaults($out = NULL)
+  private static function defaults($out = NULL, array $params = array())
   {
     if (! $out) {
       $out = array_keys(static::columns());
@@ -92,9 +90,17 @@ class Database extends \Servant\Base
       $out = is_array($out) ? $out : array($out);
     }
 
-    in_array(static::pk(), $out) OR array_unshift($out, static::pk());
+    // TODO: user cases
+    if (empty($params['group'])) {
+      in_array(static::pk(), $out) OR array_unshift($out, static::pk());
+    }
 
+    $top = static::table();
     $out = array_filter($out);
+
+    foreach ($out as $k => $v) {
+      strpos($k, '(') OR $out[$k] = "$top.$v";
+    }
 
     return $out;
   }
@@ -127,7 +133,7 @@ class Database extends \Servant\Base
 
   protected static function block($get, $where, $params, $lambda)
   {
-    $res = static::conn()->select(static::defaults($get), $where, $params);
+    $res = static::conn()->select(static::defaults($get, $params), $where, $params);
     while ($row = $res->fetch()) {
       $lambda(new static($row->to_a(), 'after_find', FALSE, $params));
     }
@@ -146,12 +152,12 @@ class Database extends \Servant\Base
           );
         }
 
-        $row = static::conn()->select(static::defaults($what), $where, $options)->fetch();
+        $row = static::conn()->select(static::defaults($what, $options), $where, $options)->fetch();
 
         return $row ? new static($row->to_a(), 'after_find', FALSE, $options) : FALSE;
       case 'all';
         $out = array();
-        $res = static::conn()->select(static::defaults($what), $where, $options);
+        $res = static::conn()->select(static::defaults($what, $options), $where, $options);
 
         while ($row = $res->fetch()) {
           $out []= new static($row->to_a(), 'after_find', FALSE, $options);
@@ -159,7 +165,7 @@ class Database extends \Servant\Base
 
         return $out;
       default; // one
-        $row = static::conn()->select(static::defaults($what), $where, $options)->fetch();
+        $row = static::conn()->select(static::defaults($what, $options), $where, $options)->fetch();
 
         return $row ? new static($row->to_a(), 'after_find', FALSE, $options) : FALSE;
     }
