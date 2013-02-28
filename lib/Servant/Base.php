@@ -162,30 +162,29 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public function set($key, $val = NULL, $fake = FALSE)
   {
-    $test = FALSE;
-    $test = (isset($this->props[$key]) OR array_key_exists($key, static::columns()));
-
-    if (! $fake && ! $test) {
-      throw new \Exception("Undefined '$key' property");
-    } else {
-      if ( ! $fake && ! in_array($key, $this->changed)) {
-        $this->changed []= $key;
+    if (! $fake) {
+      if (! array_key_exists($key, static::columns())) {
+        throw new \Exception("Undefined '$key' property");
       }
 
-      if ( ! $fake && isset($this->props[$key]) && is_object($this->props[$key])) {
-        method_exists($this->props[$key], 'from_s') && $this->props[$key]->from_s($val);
+      in_array($key, $this->changed) OR $this->changed []= $key;
+
+      if ( ! isset($this->props[$key])) {
+        $defs = static::columns();
+        $this->props[$key] = static::type($val, $defs[$key]);
+      } elseif (is_object($this->props[$key]) && method_exists($this->props[$key], 'from_s')) {
+        $this->props[$key]->from_s($val);
       } else {
         $this->props[$key] = $val;
       }
+    } else {
+      $this->props[$key] = $val;
     }
   }
 
   public function attr($key, $fake = FALSE)
   {
-    $test = FALSE;
-    $test = (isset($this->props[$key]) OR array_key_exists($key, static::columns()));
-
-    if (! $fake && ! $test) {
+    if (! $fake && ! array_key_exists($key, static::columns())) {
       throw new \Exception("Undefined '$key' property");
     }
 

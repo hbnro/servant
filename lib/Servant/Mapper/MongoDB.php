@@ -83,19 +83,31 @@ class MongoDB extends \Servant\Base
     return '_id';
   }
 
-  public static function delete_all(array $params = array())
+  public static function delete_all($params = array())
   {
-    return static::conn()->remove(static::parse($params));
+    if ($params) {
+      $params = is_array($params) ? static::parse($params) : array(
+        static::pk() => $params,
+      );
+    }
+
+    return static::conn()->remove($params);
   }
 
-  public static function update_all(array $data, array $params = array())
+  public static function update_all(array $data, $params = array())
   {
     $tmp = (object) $data;
 
     static::callback($tmp, 'before_save');
 
+    if ($params) {
+      $params = is_array($params) ? static::parse($params) : array(
+        static::pk() => $params,
+      );
+    }
+
     $data = array('$set' => (array) $tmp);
-    $out = static::conn()->update(static::parse($params), $data, array('multiple' => TRUE));
+    $out = static::conn()->update($params, $data, array('multiple' => TRUE));
 
     static::callback($tmp, 'after_save');
 

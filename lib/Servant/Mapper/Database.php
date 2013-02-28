@@ -74,16 +74,28 @@ class Database extends \Servant\Base
     return defined('static::PK') ? static::PK : 'id';
   }
 
-  public static function delete_all(array $params = array())
+  public static function delete_all($params = array())
   {
+    if ($params) {
+      $params = is_array($params) ? $params : array(
+        static::pk() => $params,
+      );
+    }
+
     return static::conn()->delete($params);
   }
 
-  public static function update_all(array $data, array $params = array())
+  public static function update_all(array $data, $params = array())
   {
     $tmp = (object) $data;
 
     static::callback($tmp, 'before_save');
+
+    if ($params) {
+      $params = is_array($params) ? $params : array(
+        static::pk() => $params,
+      );
+    }
 
     return static::conn()->update((array) $tmp, $params);
 
