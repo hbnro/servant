@@ -99,7 +99,7 @@ class Database extends \Servant\Base
     }
 
     // TODO: user cases
-    if (empty($params['group'])) {
+    if (empty($params['group']) && ! in_array('*', $out)) {
       in_array(static::pk(), $out) OR array_unshift($out, static::pk());
     }
 
