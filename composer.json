@@ -7,7 +7,7 @@
   "require": {
     "php": ">=5.3",
     "habanero/staple": "v1.6",
-    "habanero/grocery": "v0.3.52"
+    "habanero/grocery": "v0.3.6"
   },
   "autoload": {
     "psr-0": {"Servant": "lib/"}

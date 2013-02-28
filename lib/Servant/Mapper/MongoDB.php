@@ -37,17 +37,24 @@ class MongoDB extends \Servant\Base
 
       unset($fields['_id']);
 
-      if ($this->is_new()) {
-        if (static::conn()->insert($fields, array('safe' => TRUE))) {
-          $this->new_record = FALSE;
-          $this->props = $fields;
+      try {
+        if ($this->is_new()) {
+          if (static::conn()->insert($fields, array('safe' => TRUE))) {
+            $this->new_record = FALSE;
+            $this->props = $fields;
+          }
+        } else {
+          static::conn()->update(array(
+            '_id' => $this->props['_id'],
+          ), array(
+            '$set' => $fields,
+          ));
         }
-      } else {
-        static::conn()->update(array(
-          '_id' => $this->props['_id'],
-        ), array(
-          '$set' => $fields,
-        ));
+      } catch (\Exception $e) {
+        $test = $e->getMessage();
+        $this->errors = array('raise' => $test);
+
+        return FALSE;
       }
 
       static::callback($this, 'after_save');

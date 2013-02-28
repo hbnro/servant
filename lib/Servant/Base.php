@@ -6,6 +6,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 {
 
   protected $props = array();
+  protected $errors = array();
   protected $changed = array();
 
   protected $new_record = NULL;
@@ -116,7 +117,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     if (method_exists($this, $callback)) {
       $this->$callback($value);
     } else {
-      $this->attr($key, $value);
+      $this->set($key, $value);
     }
   }
 
@@ -125,7 +126,9 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     $what  = '';
     $class = get_called_class();
 
-    if (preg_match('/^(.+?)_by_(.+?)$/', $method, $match)) {
+    if (substr($method, 0, 4) === 'has_') {
+      return $this->attr(substr($method, 4), TRUE);
+    } elseif (preg_match('/^(.+?)_by_(.+?)$/', $method, $match)) {
       $method = $match[1];
       $what   = "find_by_$match[2]";
       $top    = array_pop($arguments);
@@ -157,15 +160,13 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return $this->props[static::pk()];
   }
 
-  public function attr($key, $val = NULL, $fake = FALSE)
+  public function set($key, $val = NULL, $fake = FALSE)
   {
     $test = FALSE;
     $test = (isset($this->props[$key]) OR array_key_exists($key, static::columns()));
 
     if (! $fake && ! $test) {
       throw new \Exception("Undefined '$key' property");
-    } elseif (func_num_args() === 1) {
-      return isset($this->props[$key]) ? $this->props[$key] : NULL;
     } else {
       if ( ! $fake && ! in_array($key, $this->changed)) {
         $this->changed []= $key;
@@ -177,6 +178,18 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
         $this->props[$key] = $val;
       }
     }
+  }
+
+  public function attr($key, $fake = FALSE)
+  {
+    $test = FALSE;
+    $test = (isset($this->props[$key]) OR array_key_exists($key, static::columns()));
+
+    if (! $fake && ! $test) {
+      throw new \Exception("Undefined '$key' property");
+    }
+
+    return isset($this->props[$key]) ? $this->props[$key] : NULL;
   }
 
   public function fields($updated = FALSE, $raw = FALSE)
@@ -205,7 +218,9 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public function is_valid($skip = FALSE)
   {
-    if ( ! $skip && ! empty(static::$validate)) {
+    if ($this->has_errors()) {
+      return FALSE;
+    } elseif ( ! $skip && ! empty(static::$validate)) {
       $test = \Servant\Binding\Validate::setup($this, static::$validate);
 
       return $test->run();
@@ -214,9 +229,19 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return TRUE;
   }
 
+  public function get_errors()
+  {
+    return $this->errors;
+  }
+
+  public function set_errors(array $test)
+  {
+    $this->errors = $test;
+  }
+
   public function has_errors()
   {
-    return isset($this->errors);
+    return !! $this->errors;
   }
 
   public function has_changed($field = FALSE)

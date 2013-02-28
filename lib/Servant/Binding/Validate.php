@@ -77,7 +77,7 @@ class Validate
 
     if ( ! \Staple\Validation::execute($this->data)) {
       $set = \Servant\Binding\Failure::from(\Staple\Validation::errors(), $this->data);
-      $this->model->attr('errors', $set, TRUE);
+      $this->model->set_errors($set);
     } else {
       return TRUE;
     }

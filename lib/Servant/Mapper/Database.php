@@ -36,14 +36,22 @@ class Database extends \Servant\Base
 
       unset($fields[static::pk()]);
 
-      if ($this->is_new()) {
-        $this->props[static::pk()] = static::conn()->insert($fields, static::pk());
-        $this->new_record = FALSE;
-      } else {
-        static::conn()->update($fields, array(
-          static::pk() => $this->props[static::pk()],
-        ));
+      try {
+        if ($this->is_new()) {
+          $this->props[static::pk()] = static::conn()->insert($fields, static::pk());
+          $this->new_record = FALSE;
+        } else {
+          static::conn()->update($fields, array(
+            static::pk() => $this->props[static::pk()],
+          ));
+        }
+      } catch (\Exception $e) {
+        $test = explode("\n", $e->getMessage());
+        $this->errors = array('raise' => array_shift($test));
+
+        return FALSE;
       }
+
       static::callback($this, 'after_save');
       $this->changed = array();
 

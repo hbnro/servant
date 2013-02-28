@@ -36,7 +36,7 @@ class Eager
         $out = call_user_func_array("$klass::$method", $arguments);
 
         if ($tmp = call_user_func("$include[from]::first_by_$include[on]", $out->{$include['fk']})) {
-          $out->attr($include['as'], $tmp, TRUE);
+          $out->set($include['as'], $tmp, TRUE);
         }
       break;
       default;
@@ -48,9 +48,9 @@ class Eager
             extract($include);
 
             if (isset($result[$row->$fk])) {
-              $row->attr($as, $result[$row->$fk], TRUE);
+              $row->set($as, $result[$row->$fk], TRUE);
             } else {
-              $row->attr($as, $include['from']::build(), TRUE);
+              $row->set($as, $include['from']::build(), TRUE);
             }
 
             if ($method === 'each') {
