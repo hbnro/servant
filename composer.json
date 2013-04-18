@@ -6,7 +6,7 @@
   }],
   "require": {
     "php": ">=5.3",
-    "habanero/staple": "v1.6",
+    "habanero/staple": "v1.7",
     "habanero/grocery": "v0.3.6"
   },
   "autoload": {
