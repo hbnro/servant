@@ -396,8 +396,8 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
 
   public static function exists($params = array())
   {
-    return !! static::count(is_array($params) ? $params : array(
-      'where' => array(static::pk() => $params),
+    return !! static::count(array(
+      'where' => is_array($params) ? (isset($params['where']) ? $params['where'] : $params) : array(static::pk() => $params),
     ));
   }
 
