@@ -75,7 +75,7 @@ class Eager
       if ( ! empty($on::$related_to[$from])) {
         $params = $on::$related_to[$from];
       } else {
-        $params['from'] = \Staple\Helpers::classify(\Staple\Inflector::singularize($from));
+        $params['from'] = \Staple\Helpers::classify(\Doctrine\Common\Inflector\Inflector::singularize($from));
       }
     }
 

@@ -164,7 +164,7 @@ class Validate
   private function uniqueness(array $params)
   {
     $model = ! empty($params['model']) ? $params['model'] : get_class($this->model);
-    $model = \Staple\Helpers::classify(\Staple\Inflector::singularize($model));
+    $model = \Staple\Helpers::classify(\Doctrine\Common\Inflector\Inflector::singularize($model));
 
     $field = ! empty($params['field']) ? $params['field'] : $params['field'];
     $klass = ! empty($params['class']) ? $params['class'] : $model;
