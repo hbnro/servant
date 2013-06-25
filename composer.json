@@ -6,7 +6,7 @@
   }],
   "require": {
     "php": ">=5.3",
-    "habanero/staple": "v1.9",
+    "habanero/staple": "v1.9.1",
     "habanero/grocery": "v0.3.7",
     "doctrine/inflector": "v1.0"
   },
