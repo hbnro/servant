@@ -119,7 +119,7 @@ class Helpers
     return strtr(static::classify($value), '\\', ' ');
   }
 
-  public static function fetch($from, $that = NULL, $or = FALSE)
+  public static function retrieve($from, $that = NULL, $or = FALSE)
   {
     if (is_scalar($from)) {
       return $or;
@@ -143,7 +143,7 @@ class Helpers
         $tmp = $or;
       }
 
-      $value = ! $depth ? $tmp : static::fetch($tmp, $get, $or);
+      $value = ! $depth ? $tmp : static::retrieve($tmp, $get, $or);
 
       return $value;
     }
