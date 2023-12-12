@@ -6,8 +6,8 @@
   }],
   "require": {
     "php": ">=5.3",
-    "habanero/grocery": "v0.3.8",
-    "habanero/spectre": "v0.3.3",
+    "habanero/grocery": "dev-master",
+    "habanero/spectre": "v0.3.6",
     "doctrine/inflector": "v1.0"
   },
   "autoload": {

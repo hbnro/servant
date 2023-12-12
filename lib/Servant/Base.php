@@ -2,7 +2,7 @@
 
 namespace Servant;
 
-class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
+class Base implements \ArrayAccess, \IteratorAggregate
 {
 
   protected $props = array();
@@ -29,27 +29,27 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
                       'set' => '\\Servant\\Juggling\\Set',
                     );
 
-  public function serialize()
+  public function __serialize()
   {
     return serialize($this->props);
   }
 
-  public function unserialize($data)
+  public function __unserialize($data)
   {
     $this->props = unserialize($data);
   }
 
-  public function offsetSet($offset, $value)
+  public function offsetSet($offset, $value): void
   {
     $this->$offset = $value;
   }
 
-  public function offsetExists($offset)
+  public function offsetExists($offset): bool
   {
     return isset($this->props[$offset]);
   }
 
-  public function offsetUnset($offset)
+  public function offsetUnset($offset): void
   {
     $this->$offset = NULL;
 
@@ -60,7 +60,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     }
   }
 
-  public function offsetGet($offset)
+  public function offsetGet($offset): mixed
   {
     return $this->$offset;
   }
@@ -75,7 +75,7 @@ class Base implements \Serializable, \ArrayAccess, \IteratorAggregate
     return $this->offsetUnset($key);
   }
 
-  public function getIterator()
+  public function getIterator(): \Traversable
   {
     return new \ArrayIterator($this->props);
   }
