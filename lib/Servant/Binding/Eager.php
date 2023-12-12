@@ -2,6 +2,8 @@
 
 namespace Servant\Binding;
 
+use Servant\Helpers;
+
 class Eager
 {
 
@@ -75,7 +77,7 @@ class Eager
       if ( ! empty($on::$related_to[$from])) {
         $params = $on::$related_to[$from];
       } else {
-        $params['from'] = \Staple\Helpers::classify(\Doctrine\Common\Inflector\Inflector::singularize($from));
+        $params['from'] = Helpers::classify(\Doctrine\Common\Inflector\Inflector::singularize($from));
       }
     }
 
@@ -83,8 +85,8 @@ class Eager
     $load = new static;
 
     $load->params = array_merge(array(
-      'fk' => \Staple\Helpers::underscore("$params[from]_id"),
-      'as' => \Staple\Helpers::underscore($params['from']),
+      'fk' => Helpers::underscore("$params[from]_id"),
+      'as' => Helpers::underscore($params['from']),
       'on' => $params['from']::pk(),
       'parent' => $on,
     ), $params);

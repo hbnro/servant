@@ -69,7 +69,7 @@ class Validation
 
   public static function value($name, $default = FALSE)
   {
-    return \Staple\Helpers::retrieve(static::$data, $name, $default);
+    return Helpers::retrieve(static::$data, $name, $default);
   }
 
   public static function data()
@@ -80,7 +80,7 @@ class Validation
   private static function wrong($name, array $set = array())
   {
     $fail = FALSE;
-    $test = \Staple\Helpers::retrieve(static::$data, $name);
+    $test = Helpers::retrieve(static::$data, $name);
 
     if ($key = array_search('required', $set)) {
       unset($set[$key]);
@@ -178,7 +178,7 @@ class Validation
       } elseif (is_numeric($val)) {
         $test[$key] = $val;
       } else {
-        $test[$key] = \Staple\Helpers::retrieve(static::$data, $val);
+        $test[$key] = Helpers::retrieve(static::$data, $val);
       }
     }
 

@@ -2,6 +2,9 @@
 
 namespace Servant\Binding;
 
+use Servant\Validation;
+use Servant\Helpers;
+
 class Validate
 {
 
@@ -73,10 +76,10 @@ class Validate
       }
     }
 
-    \Staple\Validation::setup($rules);
+    Validation::setup($rules);
 
-    if ( ! \Staple\Validation::execute($this->data)) {
-      $set = \Servant\Binding\Failure::from(\Staple\Validation::errors(), $this->data);
+    if ( ! Validation::execute($this->data)) {
+      $set = Binding\Failure::from(Validation::errors(), $this->data);
       $this->model->set_errors($set);
     } else {
       return TRUE;
@@ -164,7 +167,7 @@ class Validate
   private function uniqueness(array $params)
   {
     $model = ! empty($params['model']) ? $params['model'] : get_class($this->model);
-    $model = \Staple\Helpers::classify(\Doctrine\Common\Inflector\Inflector::singularize($model));
+    $model = Helpers::classify(\Doctrine\Common\Inflector\Inflector::singularize($model));
 
     $field = ! empty($params['field']) ? $params['field'] : $params['field'];
     $klass = ! empty($params['class']) ? $params['class'] : $model;

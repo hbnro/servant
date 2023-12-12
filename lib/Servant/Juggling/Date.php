@@ -2,6 +2,8 @@
 
 namespace Servant\Juggling;
 
+use Servant\Helpers;
+
 class Date
 {
 
@@ -33,7 +35,7 @@ class Date
 
   public function __call($method, array $arguments)
   {
-    $out = call_user_func_array(array($this->datetime, \Staple\Helpers::camelcase($method)), $arguments);
+    $out = call_user_func_array(array($this->datetime, Helpers::camelcase($method)), $arguments);
     $this->timestamp = $this->datetime->getTimestamp();
 
     return $out;

@@ -66,7 +66,17 @@ class Database extends \Servant\Base
 
   public static function columns()
   {
+    if (defined('static::COLUMNS')) {
+      return static::COLUMNS;
+    }
+
+    trigger_error('Property $columns is deprecated, use `const COLUMNS` instead', E_USER_DEPRECATED);
     return static::$columns;
+  }
+
+  public static function db()
+  {
+    return static::conn();
   }
 
   public static function pk()

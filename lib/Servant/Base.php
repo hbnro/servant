@@ -220,7 +220,7 @@ class Base implements \ArrayAccess, \IteratorAggregate
     if ($this->has_errors()) {
       return FALSE;
     } elseif ( ! $skip && ! empty(static::$validate)) {
-      $test = \Servant\Binding\Validate::setup($this, static::$validate);
+      $test = Binding\Validate::setup($this, static::$validate);
 
       return $test->run();
     }
@@ -291,7 +291,7 @@ class Base implements \ArrayAccess, \IteratorAggregate
 
   public static function get()
   {
-    return \Servant\Binding\Query::fetch(get_called_class(), 'select', func_get_args());
+    return Binding\Query::fetch(get_called_class(), 'select', func_get_args());
   }
 
   public static function map()
@@ -317,12 +317,12 @@ class Base implements \ArrayAccess, \IteratorAggregate
 
   public static function with($from)
   {
-    return \Servant\Binding\Eager::load(get_called_class(), $from);
+    return Binding\Eager::load(get_called_class(), $from);
   }
 
   public static function where(array $params)
   {
-    return \Servant\Binding\Query::fetch(get_called_class(), 'where', $params);
+    return Binding\Query::fetch(get_called_class(), 'where', $params);
   }
 
   public static function find()
@@ -403,18 +403,24 @@ class Base implements \ArrayAccess, \IteratorAggregate
 
   public static function table()
   {
-    return defined('static::TABLE') ? static::TABLE : \Staple\Helpers::underscore(get_called_class());
+    return defined('static::TABLE') ? static::TABLE : Helpers::underscore(get_called_class());
   }
 
   public static function indexes()
   {
+    if (defined('static::INDEXES')) {
+      return static::INDEXES;
+    }
+    if (!empty(static::$indexes)) {
+      trigger_error('Property $indexes is deprecated, use `const INDEXES` instead', E_USER_DEPRECATED);
+    }
     return static::$indexes;
   }
 
   public static function __callStatic($method, $arguments)
   {
     if (isset(static::$$method)) {
-      return \Servant\Binding\Chain::from(get_called_class(), $arguments)->$method;
+      return Binding\Chain::from(get_called_class(), $arguments)->$method;
     }
 
     switch (TRUE) {
@@ -466,7 +472,7 @@ class Base implements \ArrayAccess, \IteratorAggregate
         return static::find($params);
     }
 
-    throw new \Exception("Method '$method' missing");
+    throw new \Exception("Method 'Servant\\Base::$method' missing");
   }
 
   protected static function callback($row, $method)
